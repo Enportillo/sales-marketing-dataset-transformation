@@ -1,0 +1,42 @@
+# Entornos virtuales (Obligatorio ignorar)
+venv/
+.venv/
+env/
+ENV/
+
+# Caché de Python
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+
+# Control de versiones
+.git/
+.gitignore
+
+# Configuraciones de editores y sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Notebooks (no necesarios para ejecutar el dashboard)
+notebooks/
+
+# Documentación y notas
+docs/
+*.md
+*.zip
+
+# Outputs generados (se regeneran en runtime)
+outputs/models/
+outputs/figures/
+outputs/reports/
+
+# Datos crudos (solo se necesita el procesado)
+# data/raw/  ← incluido: los notebooks lo necesitan para comparación
+
+# Tests y configuraciones locales
+.env
+*.log
+

@@ -14,4 +14,4 @@ if __name__ == "__main__":
     print(" Sales & Marketing Dashboard – Iniciando...")
     print(" URL: http://127.0.0.1:8050")
     print("=" * 60)
-    app.run(debug=True, port=8050, host="127.0.0.1")
+    app.run(debug=True, use_reloader=False, port=8050, host="0.0.0.0")

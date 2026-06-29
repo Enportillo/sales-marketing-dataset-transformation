@@ -6,6 +6,61 @@ Proyecto de analisis, transformacion y comparacion de resultados para un dataset
 
 Estandarizar un dataset con problemas de calidad (nulos, formatos inconsistentes y valores extremos), generar versiones limpias para analisis/modelado y comparar resultados antes vs despues de la transformacion.
 
+## Arquitectura del sistema
+
+El proyecto implementa un pipeline ETL completo desde los datos crudos hasta la visualizacion interactiva en un dashboard desplegable con Docker.
+
+```mermaid
+flowchart TD
+    A[/"data/raw/\nDirty_Sales_Marketing_Dataset.xlsx\n(Excel - Fuente 1)"/]
+    B[/"data/processed/\nSales_Marketing_Clean.xlsx\n(Excel limpio - Fuente 2)"/]
+    C[/"data/processed/\nSales_Marketing_Clean_(Codificado).csv\n(CSV codificado - Fuente 3)"/]
+
+    subgraph ETL["Pipeline ETL (notebooks/)"]
+        N1["1_EDA.ipynb\nAnalisis exploratorio"]
+        N2["2_Transformacion_de_datos.ipynb\nLimpieza · Imputacion · Winsoriz. · Encoding"]
+        N3["3_Comparacion_de_resultados.ipynb\nComparacion antes/despues"]
+    end
+
+    subgraph ML["Modelado (notebooks/ + src/)"]
+        N4["4_supervised_modeling.ipynb\nKMeans Clustering · Upselling simulacion"]
+        N5["5_model_evaluation.ipynb\nRandom Forest · Logistic Reg. · Regresion"]
+        N6["6_hyperparameter_optimization.ipynb\nGridSearchCV v1-v3"]
+    end
+
+    subgraph DASH["Dashboard (dashboard/)"]
+        DL["data_loader.py\nCarga y cache de modelos ML"]
+        APP["app.py\nServidor Dash + routing"]
+        P1["Pagina EDA"] & P2["Pagina Transformacion"] & P3["Pagina Comparacion"]
+        P4["Pagina Modelado"] & P5["Pagina Evaluacion"] & P6["Pagina Optimizacion"]
+    end
+
+    subgraph DOCKER["Docker (docker/)"]
+        DC1["dash-app\nlocalhost:8050"]
+        DC2["jupyter\nlocalhost:8888"]
+    end
+
+    A --> N1 --> N2
+    N2 --> B & C
+    B --> N3
+    C --> N4 --> N5 --> N6
+    C --> DL --> APP
+    APP --> P1 & P2 & P3 & P4 & P5 & P6
+    APP --> DC1
+    DASH --> DC2
+```
+
+### Flujo de datos
+
+| Etapa | Entrada | Proceso | Salida |
+|---|---|---|---|
+| Extraccion | Excel sucio (5.000 filas) | Carga con pandas | DataFrame crudo |
+| Transformacion | DataFrame crudo | Imputacion, winsoriz., encoding | Excel limpio + CSV codificado |
+| Analisis | CSV codificado | EDA, comparacion | Figuras en `outputs/figures/` |
+| Modelado | CSV codificado | KMeans, RF, LR, GridSearchCV | Modelos en cache de sesion |
+| Visualizacion | Todos los artefactos | Plotly Dash | Dashboard interactivo |
+| Despliegue | Proyecto completo | Docker Compose | Servicios en contenedores |
+
 ## Preparacion del entorno
 
 1. Crear entorno virtual:
