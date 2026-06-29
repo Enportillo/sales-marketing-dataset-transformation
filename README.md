@@ -179,6 +179,48 @@ El pipeline genera salidas separadas segun objetivo de uso:
 - Agrupacion multivariable por country y subscription_type.
 - Tabla dinamica con pivot_table para acquisition_channel vs country.
 
+## Dashboard Interactivo (Plotly Dash)
+
+El proyecto incluye un dashboard interactivo con menu lateral izquierdo y 6 paginas, una por cada notebook.
+
+### Ejecucion
+
+```bash
+# Desde la raiz del proyecto (con el venv activo)
+python main.py
+# Abre http://127.0.0.1:8050 en el navegador
+```
+
+### Paginas disponibles
+
+| Pagina | Contenido |
+|--------|-----------|
+| EDA | Histogramas, boxplots, heatmap de correlacion, categoricas, outliers IQR |
+| Transformacion | Pipeline paso a paso, tipos de datos, estadisticas, muestra del dataset |
+| Comparacion | Nulos y distribuciones antes/después, normalizacion categorica |
+| Modelado | Codo + Silhouette, PCA 2D, centroides, radar de perfiles, distribucion por cluster |
+| Evaluacion | Matrices de confusion, curvas ROC, metricas por clase, regresion, simulacion upselling |
+| Optimizacion | Evolucion AUC por version, mejores hiperparametros (GridSearchCV), resumen ejecutivo |
+
+### Estructura del dashboard
+
+```
+dashboard/
+├── app.py                    <- Aplicacion Dash (importada por main.py)
+├── data_loader.py            <- Carga de datos y modelos con cache
+├── pages/                    <- Una pagina por notebook
+│   ├── page_eda.py
+│   ├── page_transformacion.py
+│   ├── page_comparacion.py
+│   ├── page_modelado.py
+│   ├── page_evaluacion.py
+│   └── page_optimizacion.py
+└── assets/
+    └── custom.css            <- Estilos del sidebar y tarjetas
+```
+
+> Nota: la pagina de Optimizacion ejecuta GridSearchCV (cv=3) la primera vez que se visita, lo que puede tardar 1-2 minutos. Los resultados quedan en cache durante la sesion.
+
 ## Notas operativas
 
 - Las rutas se gestionan desde src/Routes.py mediante el diccionario RUTAS.
