@@ -7,11 +7,13 @@ Uso:
     # Abre http://127.0.0.1:8050 en el navegador
 """
 
+import os
 from dashboard.app import app
 
 if __name__ == "__main__":
+    port = int(os.getenv("PORT", 8050))
     print("=" * 60)
     print(" Sales & Marketing Dashboard – Iniciando...")
-    print(" URL: http://127.0.0.1:8050")
+    print(f" URL: http://127.0.0.1:{port}")
     print("=" * 60)
-    app.run(debug=True, port=8050, host="127.0.0.1")
+    app.run(debug=True, use_reloader=False, port=port, host="0.0.0.0")

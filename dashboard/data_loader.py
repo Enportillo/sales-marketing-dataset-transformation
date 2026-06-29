@@ -265,7 +265,7 @@ def get_optimization_results() -> dict:
 
         def run_gs(Xtr, Xte, ytr, yte, label):
             gs = GridSearchCV(
-                base_pipe, param_grid, cv=3, scoring="roc_auc", n_jobs=-1
+                base_pipe, param_grid, cv=3, scoring="roc_auc", n_jobs=1
             )
             gs.fit(Xtr, ytr)
             best = gs.best_estimator_

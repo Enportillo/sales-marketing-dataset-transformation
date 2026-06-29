@@ -6,6 +6,61 @@ Proyecto de analisis, transformacion y comparacion de resultados para un dataset
 
 Estandarizar un dataset con problemas de calidad (nulos, formatos inconsistentes y valores extremos), generar versiones limpias para analisis/modelado y comparar resultados antes vs despues de la transformacion.
 
+## Arquitectura del sistema
+
+El proyecto implementa un pipeline ETL completo desde los datos crudos hasta la visualizacion interactiva en un dashboard desplegable con Docker.
+
+```mermaid
+flowchart TD
+    A[/"data/raw/\nDirty_Sales_Marketing_Dataset.xlsx\n(Excel - Fuente 1)"/]
+    B[/"data/processed/\nSales_Marketing_Clean.xlsx\n(Excel limpio - Fuente 2)"/]
+    C[/"data/processed/\nSales_Marketing_Clean_(Codificado).csv\n(CSV codificado - Fuente 3)"/]
+
+    subgraph ETL["Pipeline ETL (notebooks/)"]
+        N1["1_EDA.ipynb\nAnalisis exploratorio"]
+        N2["2_Transformacion_de_datos.ipynb\nLimpieza · Imputacion · Winsoriz. · Encoding"]
+        N3["3_Comparacion_de_resultados.ipynb\nComparacion antes/despues"]
+    end
+
+    subgraph ML["Modelado (notebooks/ + src/)"]
+        N4["4_supervised_modeling.ipynb\nKMeans Clustering · Upselling simulacion"]
+        N5["5_model_evaluation.ipynb\nRandom Forest · Logistic Reg. · Regresion"]
+        N6["6_hyperparameter_optimization.ipynb\nGridSearchCV v1-v3"]
+    end
+
+    subgraph DASH["Dashboard (dashboard/)"]
+        DL["data_loader.py\nCarga y cache de modelos ML"]
+        APP["app.py\nServidor Dash + routing"]
+        P1["Pagina EDA"] & P2["Pagina Transformacion"] & P3["Pagina Comparacion"]
+        P4["Pagina Modelado"] & P5["Pagina Evaluacion"] & P6["Pagina Optimizacion"]
+    end
+
+    subgraph DOCKER["Docker (docker/)"]
+        DC1["dash-app\nlocalhost:8050"]
+        DC2["jupyter\nlocalhost:8888"]
+    end
+
+    A --> N1 --> N2
+    N2 --> B & C
+    B --> N3
+    C --> N4 --> N5 --> N6
+    C --> DL --> APP
+    APP --> P1 & P2 & P3 & P4 & P5 & P6
+    APP --> DC1
+    DASH --> DC2
+```
+
+### Flujo de datos
+
+| Etapa | Entrada | Proceso | Salida |
+|---|---|---|---|
+| Extraccion | Excel sucio (5.000 filas) | Carga con pandas | DataFrame crudo |
+| Transformacion | DataFrame crudo | Imputacion, winsoriz., encoding | Excel limpio + CSV codificado |
+| Analisis | CSV codificado | EDA, comparacion | Figuras en `outputs/figures/` |
+| Modelado | CSV codificado | KMeans, RF, LR, GridSearchCV | Modelos en cache de sesion |
+| Visualizacion | Todos los artefactos | Plotly Dash | Dashboard interactivo |
+| Despliegue | Proyecto completo | Docker Compose | Servicios en contenedores |
+
 ## Preparacion del entorno
 
 1. Crear entorno virtual:
@@ -220,6 +275,138 @@ dashboard/
 ```
 
 > Nota: la pagina de Optimizacion ejecuta GridSearchCV (cv=3) la primera vez que se visita, lo que puede tardar 1-2 minutos. Los resultados quedan en cache durante la sesion.
+
+## Manual de usuario del dashboard
+
+El dashboard esta diseñado para dos audiencias: **analistas de negocio** (paginas 1-3) y **cientificos de datos** (paginas 4-6). Se navega mediante el menu lateral izquierdo.
+
+### Pagina 1 – Analisis Exploratorio (EDA)
+**Audiencia:** Analistas, equipo de negocio
+
+| Control | Descripcion |
+|---|---|
+| Dropdown variable numerica | Selecciona la variable a visualizar en el histograma |
+| Slider bins | Ajusta la granularidad del histograma (10-80 bins) |
+| Multi-select boxplot | Selecciona multiples variables para comparar distribuciones |
+
+- El histograma incluye lineas verticales de media y mediana para identificar asimetria.
+- El heatmap de correlacion usa Spearman (robusto ante outliers).
+- La tabla de outliers muestra la cantidad de valores extremos por variable segun regla IQR.
+
+### Pagina 2 – Transformacion de Datos
+**Audiencia:** Ingenieros de datos, analistas
+
+- Visualiza el pipeline ETL como un diagrama de 6 pasos en secuencia.
+- Permite inspeccionar la composicion de tipos de datos antes y despues de la limpieza.
+- El dropdown de variable muestra estadisticas descriptivas (media, std, min, max, cuartiles).
+- La tabla de muestra presenta las primeras 10 filas del dataset procesado.
+
+### Pagina 3 – Comparacion de Resultados
+**Audiencia:** Analistas, stakeholders
+
+| Control | Descripcion |
+|---|---|
+| Dropdown variable | Selecciona que variable comparar entre dataset sucio y limpio |
+
+- El grafico de nulos compara la cantidad de valores faltantes antes y despues del ETL.
+- La distribucion superpuesta muestra el impacto de la imputacion y winsoriz. en cada variable.
+- La tabla de metricas muestra min, max, media y mediana para ambas versiones en paralelo.
+
+### Pagina 4 – Modelado (Clustering)
+**Audiencia:** Cientificos de datos, equipos de ML
+
+| Control | Descripcion |
+|---|---|
+| Multi-select variables centroides | Selecciona que variables comparar entre los 3 clusters |
+
+- El metodo del codo y la curva Silhouette justifican la eleccion de K=3.
+- El scatter PCA 2D muestra la separacion geometrica de los clusters en espacio reducido.
+- El radar normalizado compara los 3 perfiles: **Activos**, **Regulares** y **Esporadicos**.
+
+### Pagina 5 – Evaluacion de Modelos
+**Audiencia:** Cientificos de datos
+
+| Control | Descripcion |
+|---|---|
+| Radio button modelo | Alterna entre Random Forest y Regresion Logistica |
+| Slider umbral | Ajusta el umbral de decision para la simulacion de upselling (0.1 – 0.95) |
+
+- Las curvas ROC incluyen el valor AUC en la leyenda.
+- El histograma de probabilidades muestra la separabilidad del modelo.
+- La simulacion de upselling filtra clientes basicos y cuenta cuantos superan el umbral elegido.
+
+### Pagina 6 – Optimizacion de Hiperparametros
+**Audiencia:** Cientificos de datos, MLOps
+
+| Control | Descripcion |
+|---|---|
+| Dropdown version | Muestra la matriz de confusion de la version seleccionada (v1, v2, v3) |
+
+- **Primera visita:** ejecuta GridSearchCV con cv=3. Puede tardar 1-2 minutos.
+- Compara tres hipotesis: v1 (todas las features), v2 (solo comportamiento), v3 (target invertido).
+- Los KPIs resaltan automaticamente la version con mayor ROC-AUC.
+- La tabla de hiperparametros muestra los mejores parametros encontrados por GridSearchCV.
+
+## Guia de despliegue con Docker
+
+### Requisitos previos
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y corriendo
+- Git (para clonar el repositorio)
+
+### Instrucciones paso a paso
+
+**1. Clonar el repositorio**
+```bash
+git clone <URL_del_repositorio>
+cd Sales_Marketing_Dataset
+```
+
+**2. Construir y levantar los servicios**
+```bash
+cd docker
+docker-compose up --build
+```
+
+La primera vez descarga la imagen base Python 3.13 e instala todas las dependencias (~3-5 min). Las siguientes ejecuciones usan cache y son casi instantaneas.
+
+**3. Acceder a los servicios**
+
+| Servicio | URL | Descripcion |
+|---|---|---|
+| Dashboard interactivo | http://localhost:8050 | Plotly Dash con 6 paginas |
+| JupyterLab | http://localhost:8888 | Notebooks del pipeline ETL y modelado |
+
+**4. Detener los servicios**
+```bash
+docker-compose down
+```
+
+### Variables de entorno
+
+| Variable | Valor por defecto | Descripcion |
+|---|---|---|
+| `PORT` | `8050` | Puerto del servidor Dash |
+
+Para cambiar el puerto del dashboard:
+```yaml
+# En docker/docker-compose.yml
+environment:
+  - PORT=9090
+ports:
+  - "9090:9090"
+```
+
+### Estructura Docker
+
+```
+docker/
+├── Dockerfile          <- Imagen Python 3.13-slim con dependencias del proyecto
+└── docker-compose.yml  <- Orquestacion de servicios (dashboard + jupyter)
+```
+
+> **Nota de seguridad:** JupyterLab se expone sin password (`token=''`). Usar unicamente en redes locales o de confianza. Para produccion, configurar autenticacion en docker-compose.yml.
+
+
 
 ## Notas operativas
 

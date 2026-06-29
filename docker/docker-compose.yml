@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  dash-app:
+    container_name: sales_marketing_dashboard
+    build:
+      context: ..          
+      dockerfile: docker/Dockerfile  
+    ports:
+      - "8050:8050"        
+    volumes:
+      - ../data:/app/data
+      - ../outputs:/app/outputs
+    environment:
+      - PORT=8050
+
+  jupyter:
+    container_name: sales_marketing_jupyter
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8888:8888"
+    volumes:
+      - ../data:/app/data
+      - ../outputs:/app/outputs
+      - ../notebooks:/app/notebooks
+    command: >
+      jupyter lab
+      --ip=0.0.0.0
+      --port=8888
+      --no-browser
+      --allow-root
+      --NotebookApp.token=''
+      --NotebookApp.password=''
