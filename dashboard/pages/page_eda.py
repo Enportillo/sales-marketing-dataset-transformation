@@ -14,6 +14,10 @@ from dashboard.data_loader import (
     COLS_NUMERICAS,
     COLS_CATEGORICAS,
 )
+from dashboard.plot_helpers import (
+    add_non_overlapping_vline_labels,
+    apply_outside_text_anti_overlap,
+)
 
 # ── Paleta de colores ─────────────────────────────────────────────────────────
 PALETTE = px.colors.qualitative.Set2
@@ -162,13 +166,28 @@ def register_callbacks(app):
             color_discrete_sequence=["#3b82f6"],
             opacity=0.85,
         )
-        fig.add_vline(x=media, line_dash="dash", line_color="#ef4444",
-                      annotation_text=f"Media: {media:.2f}", annotation_position="top right")
-        fig.add_vline(x=mediana, line_dash="dot", line_color="#22c55e",
-                      annotation_text=f"Mediana: {mediana:.2f}")
+        add_non_overlapping_vline_labels(
+            fig,
+            lines=[
+                {
+                    "x": float(media),
+                    "text": f"Media: {media:.2f}",
+                    "line_color": "#ef4444",
+                    "line_dash": "dash",
+                },
+                {
+                    "x": float(mediana),
+                    "text": f"Mediana: {mediana:.2f}",
+                    "line_color": "#22c55e",
+                    "line_dash": "dot",
+                },
+            ],
+            data_min=float(serie.min()),
+            data_max=float(serie.max()),
+        )
         fig.update_layout(
             paper_bgcolor="white", plot_bgcolor="#fafafa",
-            margin=dict(t=50, b=40, l=50, r=20),
+            margin=dict(t=80, b=40, l=50, r=20),
             font_family="Segoe UI",
         )
         return fig
@@ -248,7 +267,7 @@ def register_callbacks(app):
             color_discrete_sequence=PALETTE,
             text="count",
         )
-        fig.update_traces(textposition="outside")
+        apply_outside_text_anti_overlap(fig, min_top=70)
         fig.update_layout(
             paper_bgcolor="white", plot_bgcolor="#fafafa",
             margin=dict(t=50, b=80, l=60, r=20),
@@ -280,7 +299,7 @@ def register_callbacks(app):
             color_continuous_scale="Oranges",
             text="Outliers (IQR)",
         )
-        fig.update_traces(textposition="outside")
+        apply_outside_text_anti_overlap(fig, min_top=70)
         fig.update_layout(
             paper_bgcolor="white", plot_bgcolor="#fafafa",
             margin=dict(t=50, b=80, l=60, r=20),

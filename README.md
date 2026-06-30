@@ -61,7 +61,23 @@ flowchart TD
 | Visualizacion | Todos los artefactos | Plotly Dash | Dashboard interactivo |
 | Despliegue | Proyecto completo | Docker Compose | Servicios en contenedores |
 
-## Preparacion del entorno
+## Inicio rapido recomendado (Docker)
+
+Para asegurar reproducibilidad al clonar el repositorio, usa Docker como flujo principal:
+
+```bash
+cd docker
+docker-compose up --build
+```
+
+Servicios disponibles:
+
+- Dashboard: http://localhost:8050
+- JupyterLab: http://localhost:8888
+
+## Preparacion del entorno local (opcional)
+
+Usa este flujo solo si quieres trabajar sin Docker (desarrollo local):
 
 1. Crear entorno virtual:
 
@@ -347,11 +363,31 @@ El proyecto incluye un dashboard interactivo con menu lateral izquierdo y 6 pagi
 
 ### Ejecucion
 
+Opcion recomendada (Docker):
+
+```bash
+cd docker
+docker-compose up --build
+```
+
+Opcion local (venv):
+
 ```bash
 # Desde la raiz del proyecto (con el venv activo)
 python main.py
 # Abre http://127.0.0.1:8050 en el navegador
 ```
+
+### Reproducibilidad de datos al clonar
+
+El proyecto ahora valida y prepara automaticamente los artefactos de `data/processed/` al iniciar (`python main.py`).
+
+- Si existen `Sales_Marketing_Clean.xlsx` y `Sales_Marketing_Clean_(Codificado).csv`, se reutilizan.
+- Si falta el CSV codificado, se regenera desde el Excel limpio.
+- Si faltan ambos, se construyen desde `data/raw/Dirty_Sales_Marketing_Dataset.xlsx`.
+
+Esto permite que en Docker o local el dashboard arranque sin depender de archivos `processed` versionados.
+Si no existe el archivo crudo en `data/raw/`, la generacion no puede ejecutarse y se debe incluir esa fuente primero.
 
 ### Paginas disponibles
 

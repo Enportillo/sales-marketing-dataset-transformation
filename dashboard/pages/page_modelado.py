@@ -13,6 +13,7 @@ from dashboard.data_loader import (
     get_cluster_results,
     COLS_COMPORTAMIENTO,
 )
+from dashboard.plot_helpers import add_hline_label
 
 PALETTE = ["#2ca02c", "#1f77b4", "#ff7f0e", "#9467bd", "#d62728"]
 CLUSTER_LABELS = {0: "🟢 Activos", 1: "🔵 Regulares", 2: "🟠 Esporádicos / En Riesgo"}
@@ -156,16 +157,20 @@ def register_callbacks(app):
             marker=dict(size=9, color="#22c55e", symbol="square"),
             line=dict(color="#22c55e", width=2),
         ))
-        fig_sil.add_hline(y=silhouettes[1], line_dash="dot",
-                          line_color="#f59e0b",
-                          annotation_text="K=3 elegido")
+        add_hline_label(
+            fig_sil,
+            y=float(silhouettes[1]),
+            text="K=3 elegido",
+            line_color="#f59e0b",
+            line_dash="dot",
+        )
         fig_sil.update_layout(
             title="Validación Silhouette Score",
             xaxis_title="Número de Clústeres (K)",
             yaxis_title="Silhouette Score",
             paper_bgcolor="white", plot_bgcolor="#fafafa",
             font_family="Segoe UI",
-            margin=dict(t=50, b=40, l=60, r=20),
+            margin=dict(t=65, b=40, l=60, r=20),
         )
         return fig_elbow, fig_sil
 

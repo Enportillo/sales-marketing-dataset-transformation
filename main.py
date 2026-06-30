@@ -8,9 +8,14 @@ Uso:
 """
 
 import os
-from dashboard.app import app
+from src.data_bootstrap import ensure_processed_data
 
 if __name__ == "__main__":
+    outputs = ensure_processed_data(force=False)
+    print(" Datos verificados:", outputs)
+
+    from dashboard.app import app
+
     port = int(os.getenv("PORT", 8050))
     host = os.getenv("HOST", "127.0.0.1")
     print("=" * 60)

@@ -14,6 +14,7 @@ from dashboard.data_loader import (
     COLS_NUMERICAS,
     COLS_CATEGORICAS,
 )
+from dashboard.plot_helpers import apply_outside_text_anti_overlap
 
 PALETTE = px.colors.qualitative.Set2
 
@@ -201,7 +202,7 @@ def register_callbacks(app):
                      title="Cantidad de Columnas por Tipo",
                      color="Tipo", color_discrete_sequence=PALETTE,
                      text="Cantidad")
-        bar.update_traces(textposition="outside")
+        apply_outside_text_anti_overlap(bar, min_top=70)
         bar.update_layout(paper_bgcolor="white", plot_bgcolor="#fafafa",
                           showlegend=False, font_family="Segoe UI",
                           margin=dict(t=50, b=40))
@@ -257,7 +258,7 @@ def register_callbacks(app):
             text="count",
             labels={col: f"{col} (código)", "count": "Cantidad"},
         )
-        fig.update_traces(textposition="outside")
+        apply_outside_text_anti_overlap(fig, min_top=70)
         fig.update_layout(
             paper_bgcolor="white", plot_bgcolor="#fafafa",
             showlegend=False, font_family="Segoe UI",

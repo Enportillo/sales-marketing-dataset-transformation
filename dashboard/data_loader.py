@@ -16,7 +16,7 @@ from pathlib import Path
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.pipeline import Pipeline
@@ -72,6 +72,24 @@ COLS_CATEGORICAS = [
 
 # ── Caché global ──────────────────────────────────────────────────────────────
 _cache: dict = {}
+
+# Configuracion de rendimiento para dashboard interactivo
+N_JOBS = max(1, (os.cpu_count() or 2) - 1)
+MAX_ROWS_CLASSIFICATION = 12000
+MAX_ROWS_OPTIMIZATION = 6000
+
+
+def _sample_if_large(X: pd.DataFrame, y: pd.Series, max_rows: int, random_state: int = 42):
+    """Reduce el dataset de entrenamiento cuando es grande para mejorar latencia UI."""
+    if len(X) <= max_rows:
+        return X, y
+    sampled = pd.concat([X, y.rename("__target__")], axis=1).sample(
+        n=max_rows,
+        random_state=random_state,
+    )
+    Xs = sampled.drop(columns=["__target__"])
+    ys = sampled["__target__"]
+    return Xs, ys
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -169,26 +187,28 @@ def get_classification_results() -> dict:
         y = df[nombre_target]
         X = df.drop(columns=[nombre_target], errors="ignore")
 
+        X, y = _sample_if_large(X, y, max_rows=MAX_ROWS_CLASSIFICATION)
+
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42, stratify=y
         )
 
-        def train_pipe(model):
-            pipe = Pipeline([("scaler", StandardScaler()), ("clf", model)])
-            pipe.fit(X_train, y_train)
-            return pipe
-
         # Random Forest
-        pipe_rf = train_pipe(
-            RandomForestClassifier(n_estimators=100, random_state=42)
+        pipe_rf = RandomForestClassifier(
+            n_estimators=120,
+            random_state=42,
+            n_jobs=N_JOBS,
         )
+        pipe_rf.fit(X_train, y_train)
         y_pred_rf = pipe_rf.predict(X_test)
         probs_rf = pipe_rf.predict_proba(X_test)[:, 1]
 
         # Regresión Logística
-        pipe_lr = train_pipe(
-            LogisticRegression(random_state=42, max_iter=1000)
-        )
+        pipe_lr = Pipeline([
+            ("scaler", StandardScaler()),
+            ("clf", LogisticRegression(random_state=42, max_iter=600)),
+        ])
+        pipe_lr.fit(X_train, y_train)
         y_pred_lr = pipe_lr.predict(X_test)
         probs_lr = pipe_lr.predict_proba(X_test)[:, 1]
 
@@ -202,7 +222,7 @@ def get_classification_results() -> dict:
 
         lr_reg = LinearRegression().fit(Xr_tr, yr_tr)
         rf_reg = RandomForestRegressor(
-            n_estimators=100, random_state=42, n_jobs=-1
+            n_estimators=120, random_state=42, n_jobs=N_JOBS
         ).fit(Xr_tr, yr_tr)
 
         def reg_metrics(model, Xte, yte):
@@ -247,25 +267,38 @@ def get_optimization_results() -> dict:
         y = df[nombre_target]
         X = df.drop(columns=[nombre_target], errors="ignore")
 
+        X, y = _sample_if_large(X, y, max_rows=MAX_ROWS_OPTIMIZATION)
+
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42, stratify=y
         )
 
         cols_v2 = [c for c in COLS_COMPORTAMIENTO if c in df.columns]
 
-        # Grilla reducida para velocidad razonable
-        param_grid = {
-            "clf__n_estimators": [50, 100],
+        # Espacio de busqueda ligero para respuesta rapida en dashboard
+        param_dist = {
+            "clf__n_estimators": [80, 120, 160],
             "clf__max_depth": [5, 10, None],
-            "clf__min_samples_split": [2, 5],
+            "clf__min_samples_split": [2, 4, 8],
+            "clf__min_samples_leaf": [1, 2, 4],
+            "clf__max_features": ["sqrt", 0.6, None],
         }
         base_pipe = Pipeline(
-            [("scaler", StandardScaler()), ("clf", RandomForestClassifier(random_state=42))]
+            [
+                ("scaler", StandardScaler()),
+                ("clf", RandomForestClassifier(random_state=42, n_jobs=N_JOBS)),
+            ]
         )
 
         def run_gs(Xtr, Xte, ytr, yte, label):
-            gs = GridSearchCV(
-                base_pipe, param_grid, cv=3, scoring="roc_auc", n_jobs=1
+            gs = RandomizedSearchCV(
+                base_pipe,
+                param_distributions=param_dist,
+                n_iter=8,
+                cv=2,
+                scoring="roc_auc",
+                n_jobs=N_JOBS,
+                random_state=42,
             )
             gs.fit(Xtr, ytr)
             best = gs.best_estimator_
@@ -287,10 +320,6 @@ def get_optimization_results() -> dict:
 
         # v3: invertir target (Annual como positivo)
         y_inv = (y == 1).astype(int)
-        y_inv_train, y_inv_test = (
-            y_inv.iloc[y_train.index],
-            y_inv.iloc[y_test.index],
-        )
         v3 = run_gs(
             X_train[cols_v2], X_test[cols_v2],
             y_inv.loc[y_train.index], y_inv.loc[y_test.index],

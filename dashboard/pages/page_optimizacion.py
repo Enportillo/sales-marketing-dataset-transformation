@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 
 from dashboard.data_loader import get_optimization_results
+from dashboard.plot_helpers import add_hline_label
 
 PALETTE = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"]
 VERSION_COLORS = {
@@ -134,12 +135,17 @@ def register_callbacks(app):
             color_discrete_sequence=PALETTE,
             text_auto=".4f",
         )
-        fig_auc.add_hline(y=0.5, line_dash="dash", line_color="#999",
-                          annotation_text="Línea base aleatoria (0.50)")
+        add_hline_label(
+            fig_auc,
+            y=0.5,
+            text="Línea base aleatoria (0.50)",
+            line_color="#999999",
+            line_dash="dash",
+        )
         fig_auc.update_layout(
             paper_bgcolor="white", plot_bgcolor="#fafafa",
             font_family="Segoe UI", showlegend=False,
-            margin=dict(t=50, b=100, l=60, r=20),
+            margin=dict(t=65, b=100, l=60, r=20),
             yaxis_range=[0.45, max(v["auc"] for v in versions) + 0.05],
         )
 

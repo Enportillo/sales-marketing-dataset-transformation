@@ -13,6 +13,10 @@ from dashboard.data_loader import (
     get_df_clean,
     get_df_raw,
 )
+from dashboard.plot_helpers import (
+    add_non_overlapping_vline_labels,
+    apply_outside_text_anti_overlap,
+)
 
 PALETTE = px.colors.qualitative.Set2
 
@@ -172,7 +176,7 @@ def register_callbacks(app):
             color_discrete_map={"Original": "#ef4444", "Limpio": "#22c55e"},
             text="Nulos",
         )
-        fig.update_traces(textposition="outside")
+        apply_outside_text_anti_overlap(fig, min_top=70)
         fig.update_layout(
             paper_bgcolor="white", plot_bgcolor="#fafafa",
             font_family="Segoe UI",
@@ -204,12 +208,23 @@ def register_callbacks(app):
                 opacity=0.85,
             )
             mean_v = serie.mean()
-            fig.add_vline(x=mean_v, line_dash="dash", line_color="black",
-                          annotation_text=f"Media: {mean_v:.1f}")
+            add_non_overlapping_vline_labels(
+                fig,
+                lines=[
+                    {
+                        "x": float(mean_v),
+                        "text": f"Media: {mean_v:.1f}",
+                        "line_color": "#111111",
+                        "line_dash": "dash",
+                    }
+                ],
+                data_min=float(serie.min()),
+                data_max=float(serie.max()),
+            )
             fig.update_layout(
                 paper_bgcolor="white", plot_bgcolor="#fafafa",
                 font_family="Segoe UI",
-                margin=dict(t=50, b=40, l=50, r=20),
+                margin=dict(t=80, b=40, l=50, r=20),
             )
             return fig
 
@@ -236,7 +251,7 @@ def register_callbacks(app):
                 color_discrete_sequence=color_seq,
                 text="count",
             )
-            fig.update_traces(textposition="outside")
+            apply_outside_text_anti_overlap(fig, min_top=70)
             fig.update_layout(
                 paper_bgcolor="white", plot_bgcolor="#fafafa",
                 showlegend=False, font_family="Segoe UI",

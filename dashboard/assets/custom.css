@@ -121,12 +121,28 @@ body {
 }
 
 /* ── Área de contenido ──────────────────────────────────────── */
-#page-content {
+#page-content-wrapper {
   margin-left: var(--sidebar-width);
   flex: 1;
+  width: calc(100vw - var(--sidebar-width));
+  display: flex;
+  justify-content: center;
+  background: var(--content-bg);
+}
+
+#page-content {
+  width: 100%;
+  max-width: 1420px;
   padding: 24px 28px;
   min-height: 100vh;
   background: var(--content-bg);
+  margin: 0 auto;
+}
+
+#page-content .js-plotly-plot,
+#page-content .plot-container,
+#page-content .dash-graph {
+  width: 100% !important;
 }
 
 /* ── Encabezado de página ───────────────────────────────────── */

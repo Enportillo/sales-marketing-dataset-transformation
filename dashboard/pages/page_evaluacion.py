@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 
 from dashboard.data_loader import get_classification_results
+from dashboard.plot_helpers import add_non_overlapping_vline_labels
 
 PALETTE = px.colors.qualitative.Set2
 
@@ -261,12 +262,23 @@ def register_callbacks(app):
             color_discrete_map={"Básico (0)": "#3b82f6", "Anual (1)": "#22c55e"},
             opacity=0.75,
         )
-        fig.add_vline(x=0.5, line_dash="dash", line_color="#ef4444",
-                      annotation_text="Umbral 0.5")
+        add_non_overlapping_vline_labels(
+            fig,
+            lines=[
+                {
+                    "x": 0.5,
+                    "text": "Umbral 0.5",
+                    "line_color": "#ef4444",
+                    "line_dash": "dash",
+                }
+            ],
+            data_min=0.0,
+            data_max=1.0,
+        )
         fig.update_layout(
             paper_bgcolor="white", plot_bgcolor="#fafafa",
             font_family="Segoe UI",
-            margin=dict(t=50, b=40, l=60, r=20),
+            margin=dict(t=80, b=40, l=60, r=20),
         )
         return fig
 
@@ -327,15 +339,23 @@ def register_callbacks(app):
             color_discrete_sequence=["#3b82f6"],
             opacity=0.8,
         )
-        fig.add_vline(
-            x=threshold, line_dash="dash", line_color="#ef4444",
-            annotation_text=f"Umbral: {threshold:.0%}",
-            annotation_position="top right",
+        add_non_overlapping_vline_labels(
+            fig,
+            lines=[
+                {
+                    "x": float(threshold),
+                    "text": f"Umbral: {threshold:.0%}",
+                    "line_color": "#ef4444",
+                    "line_dash": "dash",
+                }
+            ],
+            data_min=float(np.min(probs)),
+            data_max=float(np.max(probs)),
         )
         fig.update_layout(
             paper_bgcolor="white", plot_bgcolor="#fafafa",
             font_family="Segoe UI",
-            margin=dict(t=50, b=40, l=60, r=20),
+            margin=dict(t=80, b=40, l=60, r=20),
         )
 
         summary = (
