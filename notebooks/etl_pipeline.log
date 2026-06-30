@@ -1,0 +1,31 @@
+2026-06-29 19:59:01 - ETL_Pipeline - INFO - ======================================================================
+2026-06-29 19:59:01 - ETL_Pipeline - INFO - Iniciando proceso de validación del pipeline ETL
+2026-06-29 19:59:01 - ETL_Pipeline - INFO - ======================================================================
+2026-06-29 19:59:31 - ETL_Pipeline - INFO - Cargando dataset crudo desde: c:\Users\encar\Desktop\Proyectos_Ciencia_de_Datos\Sales_Marketing_Dataset\data\raw\Dirty_Sales_Marketing_Dataset.xlsx
+2026-06-29 19:59:34 - ETL_Pipeline - INFO - ✅ Dataset cargado: 15750 filas, 30 columnas
+2026-06-29 19:59:38 - ETL_Pipeline - INFO - [CARGA_RAW] Iniciando validación de esquema...
+2026-06-29 19:59:38 - ETL_Pipeline - WARNING - [CARGA_RAW] ⚠️  Columnas inesperadas (se ignorarán): {'email_click_rate', 'is_premium_user', 'refund_requested', 'nps_score', 'signup_date', 'customer_id', 'churn', 'discount_used', 'coupon_code', 'email_open_rate', 'device_type', 'last_3_month_purchase_freq', 'marketing_spend_per_user', 'last_purchase_date', 'city'}
+2026-06-29 19:59:58 - ETL_Pipeline - INFO - [CARGA_RAW] Iniciando validación de esquema...
+2026-06-29 19:59:58 - ETL_Pipeline - WARNING - [CARGA_RAW] ⚠️  Columnas inesperadas (se ignorarán): {'email_click_rate', 'is_premium_user', 'refund_requested', 'nps_score', 'signup_date', 'customer_id', 'churn', 'discount_used', 'coupon_code', 'email_open_rate', 'device_type', 'last_3_month_purchase_freq', 'marketing_spend_per_user', 'last_purchase_date', 'city'}
+2026-06-29 19:59:58 - ETL_Pipeline - WARNING - [CARGA_RAW] ⚠️  Columna 'age' tiene 317 valores fuera del rango [0, 120]
+2026-06-29 19:59:58 - ETL_Pipeline - INFO - [CARGA_RAW] ✅ Validación de esquema exitosa
+2026-06-29 20:00:03 - ETL_Pipeline - INFO - [CARGA_RAW] Métricas de calidad:
+2026-06-29 20:00:03 - ETL_Pipeline - INFO -   • Filas: 15750
+2026-06-29 20:00:03 - ETL_Pipeline - INFO -   • Columnas: 30
+2026-06-29 20:00:03 - ETL_Pipeline - INFO -   • Nulls (%): 2.99%
+2026-06-29 20:00:03 - ETL_Pipeline - INFO -   • Duplicados: 380
+2026-06-29 20:00:03 - ETL_Pipeline - INFO -   • Memoria (MB): 9.81
+2026-06-29 20:00:06 - ETL_Pipeline - INFO - Cargando dataset limpio desde: c:\Users\encar\Desktop\Proyectos_Ciencia_de_Datos\Sales_Marketing_Dataset\data\processed\Sales_Marketing_Clean_(Codificado).csv
+2026-06-29 20:00:06 - ETL_Pipeline - INFO - ✅ Dataset limpio cargado: 15750 filas, 20 columnas
+2026-06-29 20:00:10 - ETL_Pipeline - INFO - [DATASET_LIMPIO] Iniciando validación de esquema...
+2026-06-29 20:00:10 - ETL_Pipeline - WARNING - [DATASET_LIMPIO] ⚠️  Columnas inesperadas (se ignorarán): {'email_click_rate', 'nps_score', 'marketing_spend_per_user', 'email_open_rate', 'last_3_month_purchase_freq'}
+2026-06-29 20:00:10 - ETL_Pipeline - INFO - [DATASET_LIMPIO] ✅ Validación de esquema exitosa
+2026-06-29 20:00:13 - ETL_Pipeline - INFO - [DATASET_LIMPIO] Métricas de calidad:
+2026-06-29 20:00:13 - ETL_Pipeline - INFO -   • Filas: 15750
+2026-06-29 20:00:13 - ETL_Pipeline - INFO -   • Columnas: 20
+2026-06-29 20:00:13 - ETL_Pipeline - INFO -   • Nulls (%): 0.00%
+2026-06-29 20:00:13 - ETL_Pipeline - INFO -   • Duplicados: 731
+2026-06-29 20:00:13 - ETL_Pipeline - INFO -   • Memoria (MB): 2.40
+2026-06-29 20:00:16 - ETL_Pipeline - INFO - ======================================================================
+2026-06-29 20:00:16 - ETL_Pipeline - INFO - Proceso de validación completado
+2026-06-29 20:00:16 - ETL_Pipeline - INFO - ======================================================================
