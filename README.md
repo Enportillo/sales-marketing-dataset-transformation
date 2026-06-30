@@ -101,6 +101,7 @@ pip install -r requirements.txt
 
 ## Orden recomendado de ejecucion
 
+0. **[NUEVO]** Ejecutar notebooks/0_ETL_Validation.ipynb para validar esquemas y calidad de datos (genera `etl_pipeline.log`).
 1. Ejecutar notebooks/1_EDA.ipynb.
 2. Ejecutar notebooks/2_Transformacion_de_datos.ipynb para generar datasets de salida en data/processed/.
 3. Ejecutar notebooks/3_Comparacion_de_resultados.ipynb para generar comparativas y figuras en outputs/figures/.
@@ -227,6 +228,112 @@ El pipeline genera salidas separadas segun objetivo de uso:
 	 - outputs/figures/heatmap_nulos.png
 	 - outputs/figures/conteo_generos_sucios_bar.png
 	 - outputs/figures/conteo_generos_limpios_bar.png
+
+## Validación de esquemas y manejo de errores
+
+El pipeline implementa validación robusta de esquemas y manejo profesional de errores mediante el módulo `src/etl_validation.py`.
+
+### Características
+
+**1. Validación de esquemas**
+- Define esquemas esperados (SCHEMA_RAW, SCHEMA_CLEAN) con tipos, rangos y valores válidos
+- Detecta columnas faltantes, valores fuera de rango y datos inválidos
+- Registra advertencias y errores en logs profesionales
+
+**2. Evaluación de calidad de datos**
+- Calcula métricas: filas, columnas, ratio de nulls, duplicados, uso de memoria
+- Compara calidad antes y después de transformaciones
+- Detecta problemas de integridad
+
+**3. Logging profesional**
+- Archivo `etl_pipeline.log` con timestamps, niveles (DEBUG, INFO, WARNING, ERROR)
+- Salida a consola (INFO+) y archivo (DEBUG+)
+- Trazabilidad completa del pipeline
+
+**4. Manejo de errores**
+- Try/except bloques con mensajes descriptivos
+- Decorador `@handle_etl_errors` para capturar excepciones
+- Recuperación elegante ante fallos de I/O y parsing
+
+### Uso en notebooks
+
+```python
+from src.etl_validation import (
+    setup_etl_logger,
+    validate_schema,
+    validate_data_quality,
+    SCHEMA_RAW,
+    SCHEMA_CLEAN
+)
+
+# Configurar logger
+logger = setup_etl_logger(log_file='etl_pipeline.log')
+
+# Validar esquema
+is_valid, errors = validate_schema(df, SCHEMA_RAW, stage_name="CARGA", logger=logger)
+
+# Evaluar calidad
+metrics = validate_data_quality(df, stage_name="CARGA", logger=logger)
+```
+
+### Notebook de validación
+
+Ejecuta **notebooks/0_ETL_Validation.ipynb** para ver un ejemplo completo que:
+- Carga el dataset crudo
+- Valida esquemas
+- Evalúa calidad
+- Registra logs detallados
+
+## Testing automatizado del ETL
+
+Se incluye una suite de tests para validar la integridad del pipeline ETL.
+
+### Ejecutar tests
+
+```bash
+# Desde la raiz del proyecto
+python tests/test_etl.py
+```
+
+O con pytest:
+```bash
+pip install pytest
+pytest tests/test_etl.py -v
+```
+
+### Tests incluidos
+
+| # | Test | Descripción |
+|---|---|---|
+| 1 | `test_raw_data_exists` | Verifica que el dataset crudo existe |
+| 2 | `test_raw_data_shape` | Valida dimensiones del dataset crudo (≥ 4000 filas) |
+| 3 | `test_clean_data_exists` | Verifica que el dataset limpio existe |
+| 4 | `test_schema_raw` | Valida esquema del dataset crudo |
+| 5 | `test_schema_clean` | Valida esquema del dataset limpio (debe pasar) |
+| 6 | `test_data_quality_raw` | Evalúa métrica de calidad del dataset crudo |
+| 7 | `test_data_quality_clean` | Evalúa calidad del dataset limpio (nulls < 1%) |
+| 8 | `test_files_consistency` | Verifica consistencia entre archivos |
+
+### Ejemplo de output
+
+```
+======================================================================
+INICIANDO SUITE DE TESTS DEL PIPELINE ETL
+======================================================================
+
+[TEST 1] Verificando existencia del dataset crudo...
+  ✅ Dataset crudo encontrado: .../data/raw/Dirty_Sales_Marketing_Dataset.xlsx
+
+[TEST 2] Verificando shape del dataset crudo...
+  ✅ Shape válido: 5000 filas × 15 columnas
+
+...
+
+======================================================================
+RESULTADOS: 8 passed, 0 failed
+======================================================================
+```
+
 
 ## Validaciones tecnicas implementadas
 
