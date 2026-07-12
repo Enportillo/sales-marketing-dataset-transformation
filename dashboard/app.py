@@ -31,6 +31,7 @@ from dash import dcc, html, Input, Output, State
 
 # ── Importar páginas ──────────────────────────────────────────────────────────
 from dashboard.pages import (
+    page_overview,
     page_eda,
     page_transformacion,
     page_comparacion,
@@ -49,6 +50,7 @@ app = dash.Dash(
 server = app.server  # Para despliegue con Gunicorn/Waitress
 
 # ── Registrar callbacks de cada página ───────────────────────────────────────
+page_overview.register_callbacks(app)
 page_eda.register_callbacks(app)
 page_transformacion.register_callbacks(app)
 page_comparacion.register_callbacks(app)
@@ -58,6 +60,7 @@ page_optimizacion.register_callbacks(app)
 
 # ── Definición del sidebar ────────────────────────────────────────────────────
 NAV_ITEMS = [
+    ("/overview",      "🎯", "Overview",                "Campaña de conversión"),
     ("/eda",           "📊", "EDA",                    "Análisis Exploratorio"),
     ("/transformacion","🔧", "Transformación",          "Limpieza y codificación"),
     ("/comparacion",   "📈", "Comparación",             "Sucio vs Limpio"),
@@ -127,6 +130,7 @@ def render_page(pathname):
         return page_eda.layout()
     pathname = pathname.lower().strip("/")
     pages = {
+        "overview":       page_overview.layout,
         "eda":            page_eda.layout,
         "transformacion": page_transformacion.layout,
         "comparacion":    page_comparacion.layout,

@@ -1,0 +1,100 @@
+2026-06-30 20:45:53 - ETL_Pipeline - INFO - [TEST_RAW] Iniciando validación de esquema...
+2026-06-30 20:45:53 - ETL_Pipeline - WARNING - [TEST_RAW] ⚠️  Columnas inesperadas (se ignorarán): {'last_3_month_purchase_freq', 'email_open_rate', 'coupon_code', 'is_premium_user', 'discount_used', 'last_purchase_date', 'signup_date', 'marketing_spend_per_user', 'churn', 'device_type', 'city', 'refund_requested', 'email_click_rate', 'customer_id', 'nps_score'}
+2026-06-30 20:45:53 - ETL_Pipeline - INFO - [TEST_CLEAN] Iniciando validación de esquema...
+2026-06-30 20:45:53 - ETL_Pipeline - INFO - [TEST_CLEAN] Iniciando validación de esquema...
+2026-06-30 20:45:53 - ETL_Pipeline - WARNING - [TEST_CLEAN] ⚠️  Columnas inesperadas (se ignorarán): {'last_3_month_purchase_freq', 'email_open_rate', 'marketing_spend_per_user', 'email_click_rate', 'nps_score'}
+2026-06-30 20:45:53 - ETL_Pipeline - WARNING - [TEST_CLEAN] ⚠️  Columnas inesperadas (se ignorarán): {'last_3_month_purchase_freq', 'email_open_rate', 'marketing_spend_per_user', 'email_click_rate', 'nps_score'}
+2026-06-30 20:45:53 - ETL_Pipeline - INFO - [TEST_CLEAN] ✅ Validación de esquema exitosa
+2026-06-30 20:45:53 - ETL_Pipeline - INFO - [TEST_CLEAN] ✅ Validación de esquema exitosa
+2026-06-30 20:45:58 - ETL_Pipeline - INFO - [TEST_RAW] Métricas de calidad:
+2026-06-30 20:45:58 - ETL_Pipeline - INFO - [TEST_RAW] Métricas de calidad:
+2026-06-30 20:45:58 - ETL_Pipeline - INFO - [TEST_RAW] Métricas de calidad:
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Filas: 15750
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Filas: 15750
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Filas: 15750
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Columnas: 30
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Columnas: 30
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Columnas: 30
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Nulls (%): 2.42%
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Nulls (%): 2.42%
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Nulls (%): 2.42%
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Duplicados: 345
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Duplicados: 345
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Duplicados: 345
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Memoria (MB): 10.52
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Memoria (MB): 10.52
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Memoria (MB): 10.52
+2026-06-30 20:45:58 - ETL_Pipeline - INFO - [TEST_CLEAN] Métricas de calidad:
+2026-06-30 20:45:58 - ETL_Pipeline - INFO - [TEST_CLEAN] Métricas de calidad:
+2026-06-30 20:45:58 - ETL_Pipeline - INFO - [TEST_CLEAN] Métricas de calidad:
+2026-06-30 20:45:58 - ETL_Pipeline - INFO - [TEST_CLEAN] Métricas de calidad:
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Filas: 15750
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Filas: 15750
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Filas: 15750
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Filas: 15750
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Columnas: 20
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Columnas: 20
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Columnas: 20
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Columnas: 20
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Nulls (%): 0.00%
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Nulls (%): 0.00%
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Nulls (%): 0.00%
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Nulls (%): 0.00%
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Duplicados: 731
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Duplicados: 731
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Duplicados: 731
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Duplicados: 731
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Memoria (MB): 2.40
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Memoria (MB): 2.40
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Memoria (MB): 2.40
+2026-06-30 20:45:58 - ETL_Pipeline - INFO -   • Memoria (MB): 2.40
+2026-06-30 21:29:44 - ETL_Pipeline - INFO - [TEST_RAW] Iniciando validación de esquema...
+2026-06-30 21:29:44 - ETL_Pipeline - WARNING - [TEST_RAW] ⚠️  Columnas inesperadas (se ignorarán): {'churn', 'signup_date', 'last_3_month_purchase_freq', 'nps_score', 'email_open_rate', 'device_type', 'last_purchase_date', 'coupon_code', 'email_click_rate', 'marketing_spend_per_user', 'is_premium_user', 'customer_id', 'refund_requested', 'city', 'discount_used'}
+2026-06-30 21:29:44 - ETL_Pipeline - INFO - [TEST_CLEAN] Iniciando validación de esquema...
+2026-06-30 21:29:44 - ETL_Pipeline - INFO - [TEST_CLEAN] Iniciando validación de esquema...
+2026-06-30 21:29:44 - ETL_Pipeline - WARNING - [TEST_CLEAN] ⚠️  Columnas inesperadas (se ignorarán): {'nps_score', 'last_3_month_purchase_freq', 'email_open_rate', 'email_click_rate', 'marketing_spend_per_user'}
+2026-06-30 21:29:44 - ETL_Pipeline - WARNING - [TEST_CLEAN] ⚠️  Columnas inesperadas (se ignorarán): {'nps_score', 'last_3_month_purchase_freq', 'email_open_rate', 'email_click_rate', 'marketing_spend_per_user'}
+2026-06-30 21:29:44 - ETL_Pipeline - INFO - [TEST_CLEAN] ✅ Validación de esquema exitosa
+2026-06-30 21:29:44 - ETL_Pipeline - INFO - [TEST_CLEAN] ✅ Validación de esquema exitosa
+2026-06-30 21:29:48 - ETL_Pipeline - INFO - [TEST_RAW] Métricas de calidad:
+2026-06-30 21:29:48 - ETL_Pipeline - INFO - [TEST_RAW] Métricas de calidad:
+2026-06-30 21:29:48 - ETL_Pipeline - INFO - [TEST_RAW] Métricas de calidad:
+2026-06-30 21:29:48 - ETL_Pipeline - INFO -   • Filas: 15750
+2026-06-30 21:29:48 - ETL_Pipeline - INFO -   • Filas: 15750
+2026-06-30 21:29:48 - ETL_Pipeline - INFO -   • Filas: 15750
+2026-06-30 21:29:48 - ETL_Pipeline - INFO -   • Columnas: 30
+2026-06-30 21:29:48 - ETL_Pipeline - INFO -   • Columnas: 30
+2026-06-30 21:29:48 - ETL_Pipeline - INFO -   • Columnas: 30
+2026-06-30 21:29:48 - ETL_Pipeline - INFO -   • Nulls (%): 2.42%
+2026-06-30 21:29:48 - ETL_Pipeline - INFO -   • Nulls (%): 2.42%
+2026-06-30 21:29:48 - ETL_Pipeline - INFO -   • Nulls (%): 2.42%
+2026-06-30 21:29:48 - ETL_Pipeline - INFO -   • Duplicados: 345
+2026-06-30 21:29:48 - ETL_Pipeline - INFO -   • Duplicados: 345
+2026-06-30 21:29:48 - ETL_Pipeline - INFO -   • Duplicados: 345
+2026-06-30 21:29:48 - ETL_Pipeline - INFO -   • Memoria (MB): 10.52
+2026-06-30 21:29:48 - ETL_Pipeline - INFO -   • Memoria (MB): 10.52
+2026-06-30 21:29:48 - ETL_Pipeline - INFO -   • Memoria (MB): 10.52
+2026-06-30 21:29:49 - ETL_Pipeline - INFO - [TEST_CLEAN] Métricas de calidad:
+2026-06-30 21:29:49 - ETL_Pipeline - INFO - [TEST_CLEAN] Métricas de calidad:
+2026-06-30 21:29:49 - ETL_Pipeline - INFO - [TEST_CLEAN] Métricas de calidad:
+2026-06-30 21:29:49 - ETL_Pipeline - INFO - [TEST_CLEAN] Métricas de calidad:
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Filas: 15750
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Filas: 15750
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Filas: 15750
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Filas: 15750
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Columnas: 20
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Columnas: 20
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Columnas: 20
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Columnas: 20
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Nulls (%): 0.00%
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Nulls (%): 0.00%
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Nulls (%): 0.00%
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Nulls (%): 0.00%
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Duplicados: 731
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Duplicados: 731
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Duplicados: 731
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Duplicados: 731
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Memoria (MB): 2.40
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Memoria (MB): 2.40
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Memoria (MB): 2.40
+2026-06-30 21:29:49 - ETL_Pipeline - INFO -   • Memoria (MB): 2.40

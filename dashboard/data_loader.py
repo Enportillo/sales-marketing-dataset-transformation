@@ -97,18 +97,26 @@ def _sample_if_large(X: pd.DataFrame, y: pd.Series, max_rows: int, random_state:
 # ──────────────────────────────────────────────────────────────────────────────
 def get_df_encoded() -> pd.DataFrame:
     if "encoded" not in _cache:
-        _cache["encoded"] = pd.read_csv(
+        df = pd.read_csv(
             DATA_PROCESSED / "Sales_Marketing_Clean_(Codificado).csv"
         )
+        if "client_id" not in df.columns:
+            # ID tecnico estable para trazabilidad de usuarios en dashboard.
+            df.insert(0, "client_id", [f"C-{i + 1:05d}" for i in range(len(df))])
+        _cache["encoded"] = df
     return _cache["encoded"]
 
 
 def get_df_clean() -> pd.DataFrame:
     if "clean" not in _cache:
         try:
-            _cache["clean"] = pd.read_excel(
+            df = pd.read_excel(
                 DATA_PROCESSED / "Sales_Marketing_Clean.xlsx"
             )
+            if "client_id" not in df.columns:
+                # Mantiene correspondencia fila a fila con el dataset codificado.
+                df.insert(0, "client_id", [f"C-{i + 1:05d}" for i in range(len(df))])
+            _cache["clean"] = df
         except Exception:
             _cache["clean"] = pd.DataFrame()
     return _cache["clean"]
@@ -185,7 +193,7 @@ def get_classification_results() -> dict:
         nombre_target = "subscription_type"
 
         y = df[nombre_target]
-        X = df.drop(columns=[nombre_target], errors="ignore")
+        X = df.drop(columns=[nombre_target, "client_id"], errors="ignore")
 
         X, y = _sample_if_large(X, y, max_rows=MAX_ROWS_CLASSIFICATION)
 
@@ -215,7 +223,7 @@ def get_classification_results() -> dict:
         # ── Regresión (predecir total_spent) ─────────────────────────────────
         target_reg = "total_spent"
         y_reg = df[target_reg]
-        X_reg = df.drop(columns=[target_reg], errors="ignore")
+        X_reg = df.drop(columns=[target_reg, "client_id"], errors="ignore")
         Xr_tr, Xr_te, yr_tr, yr_te = train_test_split(
             X_reg, y_reg, test_size=0.2, random_state=42
         )
@@ -236,6 +244,72 @@ def get_classification_results() -> dict:
         clientes_basicos_X = X_test[y_test == 0]
         probs_upsell = pipe_rf.predict_proba(clientes_basicos_X)[:, 1]
 
+        # Scoring global para vista overview a nivel usuario.
+        X_all = df.drop(columns=[nombre_target, "client_id"], errors="ignore")
+        probs_all = pipe_rf.predict_proba(X_all)[:, 1]
+
+        campaign_cols = [
+            "client_id",
+            "subscription_type",
+            "total_spent",
+            "avg_order_value",
+            "last_3_month_purchase_freq",
+            "total_visits",
+            "pages_per_session",
+            "support_tickets",
+            "gender",
+            "country",
+            "acquisition_channel",
+            "payment_method",
+        ]
+        campaign_cols = [c for c in campaign_cols if c in df.columns]
+        df_campaign = df[campaign_cols].copy()
+
+        # Reemplaza etiquetas codificadas por valores legibles del dataset limpio.
+        df_clean = get_df_clean()
+        if not df_clean.empty and "client_id" in df_clean.columns:
+            readable_cols = [
+                "client_id",
+                "gender",
+                "country",
+                "acquisition_channel",
+                "subscription_type",
+                "payment_method",
+            ]
+            readable_cols = [c for c in readable_cols if c in df_clean.columns]
+
+            if len(readable_cols) > 1:
+                df_campaign = df_campaign.merge(
+                    df_clean[readable_cols],
+                    on="client_id",
+                    how="left",
+                    suffixes=("", "_readable"),
+                )
+
+                for col in [
+                    "gender",
+                    "country",
+                    "acquisition_channel",
+                    "subscription_type",
+                    "payment_method",
+                ]:
+                    readable_col = f"{col}_readable"
+                    if readable_col not in df_campaign.columns:
+                        continue
+                    if col in df_campaign.columns:
+                        df_campaign[col] = df_campaign[readable_col].where(
+                            df_campaign[readable_col].notna(),
+                            df_campaign[col],
+                        )
+                    else:
+                        df_campaign[col] = df_campaign[readable_col]
+                    df_campaign.drop(columns=[readable_col], inplace=True)
+
+        df_campaign["conversion_score"] = probs_all
+        df_campaign["score_percentil"] = (
+            df_campaign["conversion_score"].rank(pct=True, method="average") * 100
+        )
+
         _cache["classification"] = {
             "cm_rf": confusion_matrix(y_test, y_pred_rf),
             "cm_lr": confusion_matrix(y_test, y_pred_lr),
@@ -253,8 +327,15 @@ def get_classification_results() -> dict:
             "probs_upsell": probs_upsell,
             "n_basicos": len(clientes_basicos_X),
             "pipe_rf": pipe_rf,
+            "df_campaign_scores": df_campaign,
         }
     return _cache["classification"]
+
+
+def get_campaign_scores() -> pd.DataFrame:
+    """Retorna scoring por cliente para campañas de conversión."""
+    res = get_classification_results()
+    return res.get("df_campaign_scores", pd.DataFrame()).copy()
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -265,7 +346,7 @@ def get_optimization_results() -> dict:
         df = get_df_encoded()
         nombre_target = "subscription_type"
         y = df[nombre_target]
-        X = df.drop(columns=[nombre_target], errors="ignore")
+        X = df.drop(columns=[nombre_target, "client_id"], errors="ignore")
 
         X, y = _sample_if_large(X, y, max_rows=MAX_ROWS_OPTIMIZATION)
 
