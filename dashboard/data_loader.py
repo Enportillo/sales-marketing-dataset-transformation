@@ -259,7 +259,10 @@ def get_classification_results() -> dict:
 
         # ── Upselling ─────────────────────────────────────────────────────────
         clientes_basicos_X = X_test[y_test == 0]
-        probs_upsell = pipe_rf.predict_proba(clientes_basicos_X)[:, 1]
+        if len(clientes_basicos_X) > 0:
+            probs_upsell = pipe_rf.predict_proba(clientes_basicos_X)[:, 1]
+        else:
+            probs_upsell = np.array([])
 
         # Scoring global para vista overview a nivel usuario.
         X_all = df.drop(columns=[nombre_target, "client_id"], errors="ignore")
