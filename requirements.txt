@@ -37,7 +37,7 @@ httpx-sse==0.4.3
 idna==3.11
 importlib_metadata==9.0.0
 ipykernel==7.2.0
-ipython==9.12.0
+ipython==8.39.0
 ipython_pygments_lexers==1.1.1
 ipywidgets==8.1.8
 isoduration==20.11.0
