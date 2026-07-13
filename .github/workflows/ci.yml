@@ -35,6 +35,9 @@ jobs:
       - name: Run ETL tests
         run: python tests/test_etl.py
 
+      - name: Bootstrap processed artifacts
+        run: python -m src.data_bootstrap
+
       - name: Run API tests
         run: python tests/test_api.py
 

@@ -101,8 +101,14 @@ def _sample_if_large(X: pd.DataFrame, y: pd.Series, max_rows: int, random_state:
 # ──────────────────────────────────────────────────────────────────────────────
 def get_df_encoded() -> pd.DataFrame:
     if "encoded" not in _cache:
+        encoded_path = DATA_PROCESSED / "Sales_Marketing_Clean_(Codificado).csv"
+        if not encoded_path.exists():
+            # En entornos limpios (CI/containers), reconstruye processed si faltan artefactos.
+            from src.data_bootstrap import ensure_processed_data
+
+            ensure_processed_data(force=False)
         df = pd.read_csv(
-            DATA_PROCESSED / "Sales_Marketing_Clean_(Codificado).csv"
+            encoded_path
         )
         if "client_id" not in df.columns:
             # ID tecnico estable para trazabilidad de usuarios en dashboard.
@@ -114,8 +120,13 @@ def get_df_encoded() -> pd.DataFrame:
 def get_df_clean() -> pd.DataFrame:
     if "clean" not in _cache:
         try:
+            clean_path = DATA_PROCESSED / "Sales_Marketing_Clean.xlsx"
+            if not clean_path.exists():
+                from src.data_bootstrap import ensure_processed_data
+
+                ensure_processed_data(force=False)
             df = pd.read_excel(
-                DATA_PROCESSED / "Sales_Marketing_Clean.xlsx"
+                clean_path
             )
             if "client_id" not in df.columns:
                 # Mantiene correspondencia fila a fila con el dataset codificado.
