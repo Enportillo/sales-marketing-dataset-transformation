@@ -209,6 +209,7 @@ def get_classification_results() -> dict:
 
         y = df[nombre_target]
         X = df.drop(columns=[nombre_target, "client_id"], errors="ignore")
+        X = X.select_dtypes(include=[np.number]).copy()
 
         X, y = _sample_if_large(X, y, max_rows=MAX_ROWS_CLASSIFICATION)
 
@@ -239,6 +240,7 @@ def get_classification_results() -> dict:
         target_reg = "total_spent"
         y_reg = df[target_reg]
         X_reg = df.drop(columns=[target_reg, "client_id"], errors="ignore")
+        X_reg = X_reg.select_dtypes(include=[np.number]).copy()
         Xr_tr, Xr_te, yr_tr, yr_te = train_test_split(
             X_reg, y_reg, test_size=0.2, random_state=42
         )
@@ -261,6 +263,7 @@ def get_classification_results() -> dict:
 
         # Scoring global para vista overview a nivel usuario.
         X_all = df.drop(columns=[nombre_target, "client_id"], errors="ignore")
+        X_all = X_all.select_dtypes(include=[np.number]).copy()
         probs_all = pipe_rf.predict_proba(X_all)[:, 1]
 
         campaign_cols = [
@@ -362,6 +365,7 @@ def get_optimization_results() -> dict:
         nombre_target = "subscription_type"
         y = df[nombre_target]
         X = df.drop(columns=[nombre_target, "client_id"], errors="ignore")
+        X = X.select_dtypes(include=[np.number]).copy()
 
         X, y = _sample_if_large(X, y, max_rows=MAX_ROWS_OPTIMIZATION)
 

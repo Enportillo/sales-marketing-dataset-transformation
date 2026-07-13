@@ -41,7 +41,9 @@ def _feature_defaults() -> tuple[list[str], pd.Series]:
     if df.empty or "subscription_type" not in df.columns:
         raise RuntimeError("Dataset codificado no disponible para inferencia")
 
-    feature_cols = [c for c in df.columns if c not in {"subscription_type", "client_id"}]
+    feature_frame = df.drop(columns=["subscription_type", "client_id"], errors="ignore")
+    feature_frame = feature_frame.select_dtypes(include=[np.number]).copy()
+    feature_cols = list(feature_frame.columns)
     defaults = df[feature_cols].median(numeric_only=True)
     defaults = defaults.reindex(feature_cols)
     defaults = defaults.fillna(0.0)

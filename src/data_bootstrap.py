@@ -134,8 +134,11 @@ def _cast_ints(df: pd.DataFrame) -> pd.DataFrame:
 
 def _encode(df_clean: pd.DataFrame) -> pd.DataFrame:
     encoded = df_clean.copy()
-    for col in CAT_COLS:
-        if col in encoded.columns:
+    # Codifica cualquier feature categórica para garantizar matriz numérica estable.
+    for col in encoded.columns:
+        if col == "client_id":
+            continue
+        if pd.api.types.is_object_dtype(encoded[col]) or pd.api.types.is_categorical_dtype(encoded[col]):
             le = LabelEncoder()
             encoded[col] = le.fit_transform(encoded[col].astype(str))
     return encoded
