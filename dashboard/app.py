@@ -28,9 +28,13 @@ if DASH_DIR not in sys.path:
 
 import dash
 from dash import dcc, html, Input, Output, State
+from dashboard.i18n import LANG_OPTIONS, DEFAULT_LANG
 
 # ── Importar páginas ──────────────────────────────────────────────────────────
 from dashboard.pages import (
+    page_ejecutiva,
+    page_operativa,
+    page_tecnica,
     page_overview,
     page_eda,
     page_transformacion,
@@ -50,6 +54,9 @@ app = dash.Dash(
 server = app.server  # Para despliegue con Gunicorn/Waitress
 
 # ── Registrar callbacks de cada página ───────────────────────────────────────
+page_ejecutiva.register_callbacks(app)
+page_operativa.register_callbacks(app)
+page_tecnica.register_callbacks(app)
 page_overview.register_callbacks(app)
 page_eda.register_callbacks(app)
 page_transformacion.register_callbacks(app)
@@ -60,13 +67,9 @@ page_optimizacion.register_callbacks(app)
 
 # ── Definición del sidebar ────────────────────────────────────────────────────
 NAV_ITEMS = [
-    ("/overview",      "🎯", "Overview",                "Campaña de conversión"),
-    ("/eda",           "📊", "EDA",                    "Análisis Exploratorio"),
-    ("/transformacion","🔧", "Transformación",          "Limpieza y codificación"),
-    ("/comparacion",   "📈", "Comparación",             "Sucio vs Limpio"),
-    ("/modelado",      "🤖", "Modelado",                "KMeans + Supervisado"),
-    ("/evaluacion",    "📉", "Evaluación",              "Métricas de modelos"),
-    ("/optimizacion",  "⚙️", "Optimización",            "Hiperparámetros"),
+    ("/ejecutiva",     "🏛️", "Vista Ejecutiva",         "Decisiones estratégicas"),
+    ("/operativa",     "🛠️", "Vista Operativa",         "Ejecución de campañas"),
+    ("/tecnica",       "🧩", "Vista Técnica",           "Arquitectura y detalle ML"),
 ]
 
 sidebar = html.Div([
@@ -76,9 +79,20 @@ sidebar = html.Div([
         html.P("Proyecto de Ciencia de Datos"),
     ], id="sidebar-header"),
 
+    html.Div([
+        html.Div("IDIOMA", className="nav-section-title"),
+        dcc.Dropdown(
+            id="global-lang",
+            options=LANG_OPTIONS,
+            value=DEFAULT_LANG,
+            clearable=False,
+            style={"fontSize": "0.86rem", "marginBottom": "14px"},
+        ),
+    ]),
+
     # ── Navegación ────────────────────────────────────────────────────────────
     html.Div([
-        html.Div("ANÁLISIS", className="nav-section-title"),
+        html.Div("VISTAS DE NEGOCIO", className="nav-section-title"),
         *[
             html.A([
                 html.Span(icon, className="nav-icon"),
@@ -126,10 +140,13 @@ app.layout = html.Div([
 )
 def render_page(pathname):
     if pathname in (None, "/", ""):
-        # Redirigir a EDA por defecto
-        return page_eda.layout()
+        # Redirigir a vista ejecutiva por defecto
+        return page_ejecutiva.layout()
     pathname = pathname.lower().strip("/")
     pages = {
+        "ejecutiva":      page_ejecutiva.layout,
+        "operativa":      page_operativa.layout,
+        "tecnica":        page_tecnica.layout,
         "overview":       page_overview.layout,
         "eda":            page_eda.layout,
         "transformacion": page_transformacion.layout,
@@ -144,7 +161,7 @@ def render_page(pathname):
     return html.Div([
         html.H2("404 – Página no encontrada"),
         html.P(f"La ruta '{pathname}' no existe."),
-        html.A("Volver al inicio", href="/eda"),
+        html.A("Volver al inicio", href="/ejecutiva"),
     ], style={"padding": "40px"})
 
 
@@ -155,11 +172,11 @@ def render_page(pathname):
 )
 def set_active_nav(pathname):
     if pathname is None:
-        pathname = "/eda"
+        pathname = "/ejecutiva"
     classes = []
     for href, *_ in NAV_ITEMS:
         is_active = (pathname.lower().rstrip("/") == href.lower().rstrip("/")
-                     or (pathname in ("/", "") and href == "/eda"))
+                     or (pathname in ("/", "") and href == "/ejecutiva"))
         classes.append("nav-link-custom active-nav" if is_active else "nav-link-custom")
     return classes
 
