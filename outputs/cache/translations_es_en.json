@@ -151,5 +151,18 @@
   "es|en|grid-2": "GRID 2",
   "es|en|Normalización de Variables Categóricas – Ejemplo: Género": "Normalization of Category Variables – Example: Gender",
   "es|en|El dataset original contiene valores inconsistentes (mayúsculas, espacios). El dataset limpio unifica la representación.": "The original dataset contains inconsistent values (capitals, spaces). The clean dataset unifies the representation.",
-  "es|en|Tabla Comparativa de Outliers (Mín / Máx / Media)": "Outliers Comparison Table (Min / Max / Average)"
+  "es|en|Tabla Comparativa de Outliers (Mín / Máx / Media)": "Outliers Comparison Table (Min / Max / Average)",
+  "es|en|Impacto del tratamiento de outliers por variable.": "Impact of the treatment of outliers by variable.",
+  "es|en|coerce": "coherce",
+  "es|en|Frecuencia": "Frequency",
+  "es|en|Dataset Original": "Original Dataset",
+  "es|en|Dataset Limpio": "Clean Dataset",
+  "es|en|Estadísticas de": "Statistics of",
+  "es|en|Original vs Limpio": "Original vs Clean",
+  "es|en|📌 La columna 'gender' tenía variantes como 'male', 'Male', 'MALE'. Tras la normalización se consolidan en categorías únicas.": "📌 The 'gender' column had variants such as' male ',' Male ',' MALE '. After standardization, they are consolidated into unique categories.",
+  "es|en|Registros originales": "Genuine Records",
+  "es|en|Registros limpios": "Clean records",
+  "es|en|Nulos en dataset original": "Nulls in original dataset",
+  "es|en|Nulos tras limpieza": "Null after cleaning",
+  "es|en|Página 1 – Análisis Exploratorio de Datos (EDA)": "Page 1 – Exploratory Data Analysis (EDA)"
 }
