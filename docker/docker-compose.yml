@@ -15,6 +15,21 @@ services:
       - PORT=8050
       - HOST=0.0.0.0
 
+  api-rest:
+    container_name: sales_marketing_api
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../data:/app/data
+      - ../outputs:/app/outputs
+    command: >
+      uvicorn src.api.main:app
+      --host 0.0.0.0
+      --port 8000
+
   jupyter:
     container_name: sales_marketing_jupyter
     build:

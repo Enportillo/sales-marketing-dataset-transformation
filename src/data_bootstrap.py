@@ -8,6 +8,7 @@ from typing import Dict
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
+from src.external_api_enrichment import get_usd_to_clp_rate
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 RAW_FILE = BASE_DIR / "data" / "raw" / "Dirty_Sales_Marketing_Dataset.xlsx"
@@ -154,6 +155,14 @@ def build_processed_from_raw(raw_path: Path = RAW_FILE) -> Dict[str, str]:
     df = _impute(df)
     df = _winsor_iqr(df)
     df = _cast_ints(df)
+
+    # Enriquecimiento REST: tasa de cambio para normalizar montos a USD.
+    fx_usd_to_clp = float(get_usd_to_clp_rate())
+    df["fx_usd_to_clp"] = fx_usd_to_clp
+    if "total_spent" in df.columns:
+        df["total_spent_usd"] = (df["total_spent"] / fx_usd_to_clp).round(2)
+    if "avg_order_value" in df.columns:
+        df["avg_order_value_usd"] = (df["avg_order_value"] / fx_usd_to_clp).round(2)
 
     df.to_excel(CLEAN_FILE, index=False)
     _encode(df).to_csv(ENCODED_FILE, index=False)

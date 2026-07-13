@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Compile project modules
+        run: |
+          python -m py_compile main.py
+          python -m py_compile dashboard/app.py
+          python -m py_compile src/data_bootstrap.py
+          python -m py_compile src/etl_validation.py
+          python -m py_compile src/api/main.py
+
+      - name: Run ETL tests
+        run: python tests/test_etl.py
+
+      - name: Run API tests
+        run: python tests/test_api.py
+
+      - name: Build Docker image
+        run: docker build -f docker/Dockerfile -t sales-marketing-ds:ci .
