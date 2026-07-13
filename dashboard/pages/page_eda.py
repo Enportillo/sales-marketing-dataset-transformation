@@ -14,6 +14,7 @@ from dashboard.data_loader import (
     COLS_NUMERICAS,
     COLS_CATEGORICAS,
 )
+from dashboard.i18n import tr, normalize_lang
 from dashboard.plot_helpers import (
     add_non_overlapping_vline_labels,
     apply_outside_text_anti_overlap,
@@ -23,7 +24,8 @@ from dashboard.plot_helpers import (
 PALETTE = px.colors.qualitative.Set2
 
 
-def layout():
+def layout(lang=None):
+    lang = normalize_lang(lang)
     df = get_df_encoded()
     cols_num_disponibles = [c for c in COLS_NUMERICAS if c in df.columns]
     cols_cat_disponibles = [c for c in COLS_CATEGORICAS if c in df.columns]
@@ -36,38 +38,38 @@ def layout():
     return html.Div([
         # ── Encabezado ────────────────────────────────────────────────────────
         html.Div([
-            html.H1("📊 Análisis Exploratorio de Datos (EDA)"),
-            html.P("Exploración inicial del dataset: distribuciones, outliers, "
-                   "correlaciones y resumen estadístico de variables clave."),
+            html.H1(tr("📊 Análisis Exploratorio de Datos (EDA)", lang)),
+            html.P(tr("Exploración inicial del dataset: distribuciones, outliers, "
+                      "correlaciones y resumen estadístico de variables clave.", lang)),
         ], className="page-header"),
 
         # ── KPIs ──────────────────────────────────────────────────────────────
         html.Div([
             html.Div([
                 html.Div(f"{n_filas:,}", className="kpi-value"),
-                html.Div("Registros", className="kpi-label"),
+                html.Div(tr("Registros", lang), className="kpi-label"),
             ], className="kpi-card blue"),
             html.Div([
                 html.Div(str(n_cols), className="kpi-value"),
-                html.Div("Columnas totales", className="kpi-label"),
+                html.Div(tr("Columnas totales", lang), className="kpi-label"),
             ], className="kpi-card green"),
             html.Div([
                 html.Div(str(n_numericas), className="kpi-value"),
-                html.Div("Variables numéricas", className="kpi-label"),
+                html.Div(tr("Variables numéricas", lang), className="kpi-label"),
             ], className="kpi-card purple"),
             html.Div([
                 html.Div(str(nulos_total), className="kpi-value"),
-                html.Div("Valores nulos", className="kpi-label"),
+                html.Div(tr("Valores nulos", lang), className="kpi-label"),
             ], className="kpi-card orange"),
         ], className="kpi-row"),
 
         # ── Sección 1: Distribuciones ─────────────────────────────────────────
         html.Div([
-            html.H3("Distribuciones de Variables Numéricas"),
-            html.P("Selecciona una variable para ver su histograma y estadísticas.",
+            html.H3(tr("Distribuciones de Variables Numéricas", lang)),
+            html.P(tr("Selecciona una variable para ver su histograma y estadísticas.", lang),
                    className="card-desc"),
             html.Div([
-                html.Span("Variable:", className="control-label"),
+                html.Span(tr("Variable:", lang), className="control-label"),
                 dcc.Dropdown(
                     id="eda-num-col",
                     options=[{"label": c, "value": c} for c in cols_num_disponibles],
@@ -75,7 +77,7 @@ def layout():
                     clearable=False,
                     style={"minWidth": "200px"},
                 ),
-                html.Span("Bins:", className="control-label"),
+                html.Span(tr("Bins:", lang), className="control-label"),
                 dcc.Slider(
                     id="eda-bins",
                     min=10, max=80, step=5, value=30,
@@ -87,11 +89,11 @@ def layout():
 
         # ── Sección 2: Boxplots ───────────────────────────────────────────────
         html.Div([
-            html.H3("Boxplots – Inspección de Outliers"),
-            html.P("Compara la distribución y los outliers entre variables. "
-                   "Selecciona hasta 6.", className="card-desc"),
+            html.H3(tr("Boxplots – Inspección de Outliers", lang)),
+            html.P(tr("Compara la distribución y los outliers entre variables. "
+                      "Selecciona hasta 6.", lang), className="card-desc"),
             html.Div([
-                html.Span("Variables:", className="control-label"),
+                html.Span(tr("Variables:", lang), className="control-label"),
                 dcc.Dropdown(
                     id="eda-box-cols",
                     options=[{"label": c, "value": c} for c in cols_num_disponibles],
@@ -105,23 +107,23 @@ def layout():
 
         # ── Sección 3: Correlaciones ──────────────────────────────────────────
         html.Div([
-            html.H3("Mapa de Correlación (Spearman)"),
-            html.P("Correlaciones entre variables numéricas del dataset limpio "
-                   "y codificado.", className="card-desc"),
+            html.H3(tr("Mapa de Correlación (Spearman)", lang)),
+            html.P(tr("Correlaciones entre variables numéricas del dataset limpio "
+                      "y codificado.", lang), className="card-desc"),
             dcc.Graph(id="eda-corr-heatmap"),
             html.Div([
-                "💡 Valores cercanos a +1 o -1 indican relación fuerte. "
-                "Valores cercanos a 0 indican independencia estadística."
+                tr("💡 Valores cercanos a +1 o -1 indican relación fuerte. "
+                   "Valores cercanos a 0 indican independencia estadística.", lang)
             ], className="insight-box"),
         ], className="dashboard-card"),
 
         # ── Sección 4: Variables Categóricas ─────────────────────────────────
         html.Div([
-            html.H3("Distribución de Variables Categóricas"),
-            html.P("Frecuencia de las categorías en las variables seleccionadas.",
+            html.H3(tr("Distribución de Variables Categóricas", lang)),
+            html.P(tr("Frecuencia de las categorías en las variables seleccionadas.", lang),
                    className="card-desc"),
             html.Div([
-                html.Span("Categoría:", className="control-label"),
+                html.Span(tr("Categoría:", lang), className="control-label"),
                 dcc.Dropdown(
                     id="eda-cat-col",
                     options=[{"label": c, "value": c} for c in cols_cat_disponibles],
@@ -135,8 +137,8 @@ def layout():
 
         # ── Sección 5: Tabla de Outliers IQR ─────────────────────────────────
         html.Div([
-            html.H3("Resumen de Outliers por IQR"),
-            html.P("Conteo de valores fuera de los límites [Q1 − 1.5·IQR, Q3 + 1.5·IQR].",
+                 html.H3(tr("Resumen de Outliers por IQR", lang)),
+                 html.P(tr("Conteo de valores fuera de los límites [Q1 − 1.5·IQR, Q3 + 1.5·IQR].", lang),
                    className="card-desc"),
             dcc.Graph(id="eda-outlier-bar"),
         ], className="dashboard-card"),
@@ -150,8 +152,10 @@ def register_callbacks(app):
         Output("eda-histogram", "figure"),
         Input("eda-num-col", "value"),
         Input("eda-bins", "value"),
+        Input("global-lang", "value"),
     )
-    def update_histogram(col, bins):
+    def update_histogram(col, bins, lang):
+        lang = normalize_lang(lang)
         if not col:
             return go.Figure()
         df = get_df_encoded()
@@ -161,8 +165,8 @@ def register_callbacks(app):
 
         fig = px.histogram(
             serie, nbins=bins,
-            title=f"Distribución de '{col}'",
-            labels={"value": col, "count": "Frecuencia"},
+            title=f"{tr('Distribución de', lang)} '{col}'",
+            labels={"value": col, "count": tr("Frecuencia", lang)},
             color_discrete_sequence=["#3b82f6"],
             opacity=0.85,
         )
@@ -171,13 +175,13 @@ def register_callbacks(app):
             lines=[
                 {
                     "x": float(media),
-                    "text": f"Media: {media:.2f}",
+                    "text": f"{tr('Media', lang)}: {media:.2f}",
                     "line_color": "#ef4444",
                     "line_dash": "dash",
                 },
                 {
                     "x": float(mediana),
-                    "text": f"Mediana: {mediana:.2f}",
+                    "text": f"{tr('Mediana', lang)}: {mediana:.2f}",
                     "line_color": "#22c55e",
                     "line_dash": "dot",
                 },
@@ -195,8 +199,10 @@ def register_callbacks(app):
     @app.callback(
         Output("eda-boxplot", "figure"),
         Input("eda-box-cols", "value"),
+        Input("global-lang", "value"),
     )
-    def update_boxplot(cols):
+    def update_boxplot(cols, lang):
+        lang = normalize_lang(lang)
         if not cols:
             return go.Figure()
         df = get_df_encoded()
@@ -211,7 +217,7 @@ def register_callbacks(app):
                 jitter=0.3,
             ))
         fig.update_layout(
-            title="Boxplots de Variables Seleccionadas",
+            title=tr("Boxplots de Variables Seleccionadas", lang),
             paper_bgcolor="white", plot_bgcolor="#fafafa",
             margin=dict(t=50, b=40, l=60, r=20),
             font_family="Segoe UI",
@@ -222,8 +228,10 @@ def register_callbacks(app):
     @app.callback(
         Output("eda-corr-heatmap", "figure"),
         Input("eda-num-col", "value"),
+        Input("global-lang", "value"),
     )
-    def update_corr(_=None):
+    def update_corr(_, lang):
+        lang = normalize_lang(lang)
         df = get_df_encoded()
         cols = [c for c in COLS_NUMERICAS if c in df.columns]
         corr = df[cols].corr(method="spearman").round(2)
@@ -233,7 +241,7 @@ def register_callbacks(app):
             color_continuous_scale="RdBu_r",
             zmin=-1, zmax=1,
             aspect="auto",
-            title="Correlación de Spearman",
+            title=tr("Correlación de Spearman", lang),
         )
         fig.update_layout(
             paper_bgcolor="white",
@@ -246,8 +254,10 @@ def register_callbacks(app):
     @app.callback(
         Output("eda-cat-bar", "figure"),
         Input("eda-cat-col", "value"),
+        Input("global-lang", "value"),
     )
-    def update_cat_bar(col):
+    def update_cat_bar(col, lang):
+        lang = normalize_lang(lang)
         if not col:
             return go.Figure()
         df = get_df_clean()
@@ -261,8 +271,8 @@ def register_callbacks(app):
 
         fig = px.bar(
             conteo, x=col, y="count",
-            title=f"Distribución de '{col}'",
-            labels={col: col, "count": "Cantidad"},
+            title=f"{tr('Distribución de', lang)} '{col}'",
+            labels={col: col, "count": tr("Cantidad", lang)},
             color=col,
             color_discrete_sequence=PALETTE,
             text="count",
@@ -279,8 +289,10 @@ def register_callbacks(app):
     @app.callback(
         Output("eda-outlier-bar", "figure"),
         Input("eda-num-col", "value"),
+        Input("global-lang", "value"),
     )
-    def update_outliers(_=None):
+    def update_outliers(_, lang):
+        lang = normalize_lang(lang)
         df = get_df_encoded()
         cols = [c for c in COLS_NUMERICAS if c in df.columns]
         rows = []
@@ -294,7 +306,7 @@ def register_callbacks(app):
         df_out = pd.DataFrame(rows).sort_values("Outliers (IQR)", ascending=False)
         fig = px.bar(
             df_out, x="Variable", y="Outliers (IQR)",
-            title="Cantidad de Outliers por Variable (Método IQR)",
+            title=tr("Cantidad de Outliers por Variable (Método IQR)", lang),
             color="Outliers (IQR)",
             color_continuous_scale="Oranges",
             text="Outliers (IQR)",

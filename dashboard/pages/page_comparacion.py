@@ -13,6 +13,7 @@ from dashboard.data_loader import (
     get_df_clean,
     get_df_raw,
 )
+from dashboard.i18n import tr, normalize_lang
 from dashboard.plot_helpers import (
     add_non_overlapping_vline_labels,
     apply_outside_text_anti_overlap,
@@ -28,7 +29,8 @@ COLS_OUTLIERS = [
 ]
 
 
-def layout():
+def layout(lang=None):
+    lang = normalize_lang(lang)
     df_raw = get_df_raw()
     df_clean = get_df_clean()
 
@@ -40,51 +42,54 @@ def layout():
     return html.Div([
         # ── Encabezado ────────────────────────────────────────────────────────
         html.Div([
-            html.H1("📈 Comparación de Resultados: Sucio vs Limpio"),
-            html.P("Impacto del proceso de limpieza en la calidad del dataset. "
-                   "Comparativa de nulos, distribuciones y outliers."),
+            html.H1(tr("📈 Comparación de Resultados: Sucio vs Limpio", lang)),
+            html.P(tr("Impacto del proceso de limpieza en la calidad del dataset. "
+                      "Comparativa de nulos, distribuciones y outliers.", lang)),
         ], className="page-header"),
 
         # ── KPIs ──────────────────────────────────────────────────────────────
         html.Div([
             html.Div([html.Div(f"{n_raw:,}" if isinstance(n_raw, int) else n_raw,
                                className="kpi-value"),
-                      html.Div("Registros originales", className="kpi-label")],
+                      html.Div(tr("Registros originales", lang), className="kpi-label")],
                      className="kpi-card red"),
             html.Div([html.Div(f"{n_clean:,}" if isinstance(n_clean, int) else n_clean,
                                className="kpi-value"),
-                      html.Div("Registros limpios", className="kpi-label")],
+                      html.Div(tr("Registros limpios", lang), className="kpi-label")],
                      className="kpi-card green"),
             html.Div([html.Div(f"{nulos_raw:,}", className="kpi-value"),
-                      html.Div("Nulos en dataset original", className="kpi-label")],
+                      html.Div(tr("Nulos en dataset original", lang), className="kpi-label")],
                      className="kpi-card orange"),
             html.Div([html.Div(str(nulos_clean), className="kpi-value"),
-                      html.Div("Nulos tras limpieza", className="kpi-label")],
+                      html.Div(tr("Nulos tras limpieza", lang), className="kpi-label")],
                      className="kpi-card blue"),
         ], className="kpi-row"),
 
         html.Div([
-            "✅ El proceso de limpieza eliminó todos los valores nulos "
-            "y corrigió inconsistencias en variables categóricas, mejorando "
-            "significativamente la calidad del dataset para el modelado."
+            tr(
+                "✅ El proceso de limpieza eliminó todos los valores nulos "
+                "y corrigió inconsistencias en variables categóricas, mejorando "
+                "significativamente la calidad del dataset para el modelado.",
+                lang,
+            )
         ], className="insight-box success"),
 
         # ── Comparación de Nulos ──────────────────────────────────────────────
         html.Div([
-            html.H3("Nulos por Columna: Antes vs Después"),
-            html.P("Comparativa del conteo de nulos en el dataset original "
-                   "y el dataset limpio.", className="card-desc"),
+                 html.H3(tr("Nulos por Columna: Antes vs Después", lang)),
+                 html.P(tr("Comparativa del conteo de nulos en el dataset original "
+                     "y el dataset limpio.", lang), className="card-desc"),
             dcc.Graph(id="comp-nulos-chart"),
         ], className="dashboard-card"),
 
         # ── Distribuciones Lado a Lado ────────────────────────────────────────
         html.Div([
-            html.H3("Distribución de Variable: Antes vs Después"),
-            html.P("Observa cómo cambia la distribución de una variable "
-                   "tras el tratamiento de outliers y limpieza.",
+            html.H3(tr("Distribución de Variable: Antes vs Después", lang)),
+            html.P(tr("Observa cómo cambia la distribución de una variable "
+                      "tras el tratamiento de outliers y limpieza.", lang),
                    className="card-desc"),
             html.Div([
-                html.Span("Variable:", className="control-label"),
+                html.Span(tr("Variable:", lang), className="control-label"),
                 dcc.Dropdown(
                     id="comp-var-col",
                     options=[{"label": c, "value": c}
@@ -103,27 +108,30 @@ def layout():
 
         # ── Categoría Género ──────────────────────────────────────────────────
         html.Div([
-            html.H3("Normalización de Variables Categóricas – Ejemplo: Género"),
-            html.P("El dataset original contiene valores inconsistentes (mayúsculas, "
-                   "espacios). El dataset limpio unifica la representación.",
+                 html.H3(tr("Normalización de Variables Categóricas – Ejemplo: Género", lang)),
+                 html.P(tr("El dataset original contiene valores inconsistentes (mayúsculas, "
+                     "espacios). El dataset limpio unifica la representación.", lang),
                    className="card-desc"),
             html.Div(className="grid-2", children=[
                 dcc.Graph(id="comp-gender-raw"),
                 dcc.Graph(id="comp-gender-clean"),
             ]),
             html.Div([
-                "📌 La columna 'gender' tenía variantes como 'male', 'Male', 'MALE'. "
-                "Tras la normalización se consolidan en categorías únicas."
+                tr(
+                    "📌 La columna 'gender' tenía variantes como 'male', 'Male', 'MALE'. "
+                    "Tras la normalización se consolidan en categorías únicas.",
+                    lang,
+                )
             ], className="insight-box warning"),
         ], className="dashboard-card"),
 
         # ── Comparación de Estadísticas ───────────────────────────────────────
         html.Div([
-            html.H3("Tabla Comparativa de Outliers (Mín / Máx / Media)"),
-            html.P("Impacto del tratamiento de outliers por variable.",
+            html.H3(tr("Tabla Comparativa de Outliers (Mín / Máx / Media)", lang)),
+            html.P(tr("Impacto del tratamiento de outliers por variable.", lang),
                    className="card-desc"),
             html.Div([
-                html.Span("Variable:", className="control-label"),
+                html.Span(tr("Variable:", lang), className="control-label"),
                 dcc.Dropdown(
                     id="comp-stats-var",
                     options=[{"label": c, "value": c}
@@ -144,13 +152,15 @@ def register_callbacks(app):
     @app.callback(
         Output("comp-nulos-chart", "figure"),
         Input("comp-var-col", "value"),
+        Input("global-lang", "value"),
     )
-    def update_nulos(col):
+    def update_nulos(col, lang):
+        lang = normalize_lang(lang)
         df_raw = get_df_raw()
         df_clean = get_df_clean()
 
         if df_raw.empty or df_clean.empty:
-            return _empty_fig("Datos no disponibles")
+            return _empty_fig(tr("Datos no disponibles", lang))
 
         # Columnas comunes
         common = [c for c in df_clean.columns if c in df_raw.columns]
@@ -166,13 +176,13 @@ def register_callbacks(app):
         df_comp = df_comp[df_comp["Nulos"] > 0]
 
         if df_comp.empty:
-            return _empty_fig("No se encontraron diferencias de nulos en columnas comunes.")
+            return _empty_fig(tr("No se encontraron diferencias de nulos en columnas comunes.", lang))
 
         fig = px.bar(
             df_comp, x="Columna", y="Nulos",
             color="Dataset",
             barmode="group",
-            title="Nulos por Columna – Original vs Limpio",
+            title=tr("Nulos por Columna – Original vs Limpio", lang),
             color_discrete_map={"Original": "#ef4444", "Limpio": "#22c55e"},
             text="Nulos",
         )
@@ -188,22 +198,24 @@ def register_callbacks(app):
         Output("comp-dist-raw", "figure"),
         Output("comp-dist-clean", "figure"),
         Input("comp-var-col", "value"),
+        Input("global-lang", "value"),
     )
-    def update_dist(col):
+    def update_dist(col, lang):
+        lang = normalize_lang(lang)
         df_raw = get_df_raw()
         df_clean = get_df_clean()
 
         if not col:
-            return _empty_fig("Selecciona una variable"), _empty_fig("")
+            return _empty_fig(tr("Selecciona una variable", lang)), _empty_fig("")
 
         def hist(df, title, color):
             if df.empty or col not in df.columns:
-                return _empty_fig("Datos no disponibles")
+                return _empty_fig(tr("Datos no disponibles", lang))
             serie = pd.to_numeric(df[col], errors="coerce").dropna()
             fig = px.histogram(
                 serie, nbins=40,
                 title=title,
-                labels={"value": col, "count": "Frecuencia"},
+                labels={"value": col, "count": tr("Frecuencia", lang)},
                 color_discrete_sequence=[color],
                 opacity=0.85,
             )
@@ -213,7 +225,7 @@ def register_callbacks(app):
                 lines=[
                     {
                         "x": float(mean_v),
-                        "text": f"Media: {mean_v:.1f}",
+                        "text": f"{tr('Media', lang)}: {mean_v:.1f}",
                         "line_color": "#111111",
                         "line_dash": "dash",
                     }
@@ -229,19 +241,21 @@ def register_callbacks(app):
             return fig
 
         return (
-            hist(df_raw, f"'{col}' – Dataset Original", "#ef4444"),
-            hist(df_clean, f"'{col}' – Dataset Limpio", "#22c55e"),
+            hist(df_raw, f"'{col}' – {tr('Dataset Original', lang)}", "#ef4444"),
+            hist(df_clean, f"'{col}' – {tr('Dataset Limpio', lang)}", "#22c55e"),
         )
 
     @app.callback(
         Output("comp-gender-raw", "figure"),
         Output("comp-gender-clean", "figure"),
         Input("comp-var-col", "value"),
+        Input("global-lang", "value"),
     )
-    def update_gender(col):
+    def update_gender(col, lang):
+        lang = normalize_lang(lang)
         def gender_bar(df, title, color_seq):
             if df.empty or "gender" not in df.columns:
-                return _empty_fig("Datos no disponibles")
+                return _empty_fig(tr("Datos no disponibles", lang))
             conteo = df["gender"].astype(str).value_counts().reset_index()
             conteo.columns = ["gender", "count"]
             fig = px.bar(
@@ -262,20 +276,22 @@ def register_callbacks(app):
         red_pal = ["#ef4444", "#f97316", "#fbbf24", "#f43f5e", "#dc2626"]
         green_pal = ["#22c55e", "#16a34a", "#4ade80", "#15803d", "#86efac"]
         return (
-            gender_bar(get_df_raw(), "Género – Dataset Original", red_pal),
-            gender_bar(get_df_clean(), "Género – Dataset Limpio", green_pal),
+            gender_bar(get_df_raw(), tr("Género – Dataset Original", lang), red_pal),
+            gender_bar(get_df_clean(), tr("Género – Dataset Limpio", lang), green_pal),
         )
 
     @app.callback(
         Output("comp-stats-chart", "figure"),
         Input("comp-stats-var", "value"),
+        Input("global-lang", "value"),
     )
-    def update_stats_comparison(col):
+    def update_stats_comparison(col, lang):
+        lang = normalize_lang(lang)
         df_raw = get_df_raw()
         df_clean = get_df_clean()
 
         if not col:
-            return _empty_fig("Selecciona una variable")
+            return _empty_fig(tr("Selecciona una variable", lang))
 
         def stats(df, label):
             if df.empty or col not in df.columns:
@@ -292,7 +308,7 @@ def register_callbacks(app):
         rows = [stats(df_raw, "Original"), stats(df_clean, "Limpio")]
         rows = [r for r in rows if r]
         if not rows:
-            return _empty_fig("Datos no disponibles")
+            return _empty_fig(tr("Datos no disponibles", lang))
 
         df_stats = pd.DataFrame(rows)
         df_melt = df_stats.melt(id_vars="Dataset", var_name="Métrica", value_name="Valor")
@@ -300,7 +316,7 @@ def register_callbacks(app):
         fig = px.bar(
             df_melt, x="Métrica", y="Valor",
             color="Dataset", barmode="group",
-            title=f"Estadísticas de '{col}': Original vs Limpio",
+            title=f"{tr('Estadísticas de', lang)} '{col}': {tr('Original vs Limpio', lang)}",
             color_discrete_map={"Original": "#ef4444", "Limpio": "#22c55e"},
             text_auto=".2f",
         )
