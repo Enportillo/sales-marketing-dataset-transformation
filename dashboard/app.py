@@ -27,8 +27,8 @@ if DASH_DIR not in sys.path:
     sys.path.insert(0, DASH_DIR)
 
 import dash
-from dash import dcc, html, Input, Output, State
-from dashboard.i18n import LANG_OPTIONS, DEFAULT_LANG, tr, normalize_lang
+from dash import dcc, html, Input, Output, State, no_update, ctx
+from dashboard.i18n import LANG_OPTIONS, DEFAULT_LANG, tr, normalize_lang, start_i18n_warmup
 
 # ── Importar páginas ──────────────────────────────────────────────────────────
 from dashboard.pages import (
@@ -64,6 +64,9 @@ page_comparacion.register_callbacks(app)
 page_modelado.register_callbacks(app)
 page_evaluacion.register_callbacks(app)
 page_optimizacion.register_callbacks(app)
+
+# Precalienta traducciones frecuentes en segundo plano para reducir latencia.
+start_i18n_warmup()
 
 # ── Definición del sidebar ────────────────────────────────────────────────────
 NAV_ITEMS = [
@@ -128,6 +131,7 @@ sidebar = html.Div([
 # ── Layout principal ──────────────────────────────────────────────────────────
 app.layout = html.Div([
     dcc.Location(id="url", refresh=False),
+    dcc.Store(id="global-lang-store", storage_type="local", data=DEFAULT_LANG),
     sidebar,
     html.Div(
         dcc.Loading(
@@ -143,9 +147,30 @@ app.layout = html.Div([
 
 # ── Callback de routing ───────────────────────────────────────────────────────
 @app.callback(
+    Output("global-lang", "value"),
+    Output("global-lang-store", "data"),
+    Input("global-lang", "value"),
+    Input("global-lang-store", "data"),
+)
+def sync_language_state(dropdown_lang, stored_lang):
+    """Sincroniza idioma entre dropdown y localStorage sin loops."""
+    trigger = ctx.triggered_id
+    if trigger == "global-lang":
+        desired = normalize_lang(dropdown_lang)
+    elif trigger == "global-lang-store":
+        desired = normalize_lang(stored_lang)
+    else:
+        desired = normalize_lang(stored_lang if stored_lang else dropdown_lang)
+
+    dropdown_out = desired if normalize_lang(dropdown_lang) != desired else no_update
+    store_out = desired if normalize_lang(stored_lang) != desired else no_update
+    return dropdown_out, store_out
+
+
+@app.callback(
     Output("page-content", "children"),
     Input("url", "pathname"),
-    Input("global-lang", "value"),
+    Input("global-lang-store", "data"),
 )
 def render_page(pathname, lang):
     lang = normalize_lang(lang)
@@ -191,7 +216,7 @@ def render_page(pathname, lang):
     Output("nav-sublabel-tecnica", "children"),
     Output("sidebar-footer-line1", "children"),
     Output("sidebar-footer-line2", "children"),
-    Input("global-lang", "value"),
+    Input("global-lang-store", "data"),
 )
 def translate_sidebar_shell(lang):
     lang = normalize_lang(lang)
