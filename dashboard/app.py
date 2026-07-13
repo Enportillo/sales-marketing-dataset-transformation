@@ -28,7 +28,7 @@ if DASH_DIR not in sys.path:
 
 import dash
 from dash import dcc, html, Input, Output, State
-from dashboard.i18n import LANG_OPTIONS, DEFAULT_LANG
+from dashboard.i18n import LANG_OPTIONS, DEFAULT_LANG, tr, normalize_lang
 
 # ── Importar páginas ──────────────────────────────────────────────────────────
 from dashboard.pages import (
@@ -75,30 +75,38 @@ NAV_ITEMS = [
 sidebar = html.Div([
     # ── Header ────────────────────────────────────────────────────────────────
     html.Div([
-        html.H2("Sales & Marketing\nML Dashboard"),
-        html.P("Proyecto de Ciencia de Datos"),
+        html.H2("Sales & Marketing\nML Dashboard", id="sidebar-title"),
+        html.P("Proyecto de Ciencia de Datos", id="sidebar-subtitle"),
     ], id="sidebar-header"),
 
     html.Div([
-        html.Div("IDIOMA", className="nav-section-title"),
+        html.Div("IDIOMA", className="nav-section-title", id="sidebar-lang-title"),
         dcc.Dropdown(
             id="global-lang",
             options=LANG_OPTIONS,
             value=DEFAULT_LANG,
             clearable=False,
-            style={"fontSize": "0.86rem", "marginBottom": "14px"},
+            style={"fontSize": "0.86rem", "marginBottom": "14px","color":"black"},
         ),
     ]),
 
     # ── Navegación ────────────────────────────────────────────────────────────
     html.Div([
-        html.Div("VISTAS DE NEGOCIO", className="nav-section-title"),
+        html.Div("VISTAS DE NEGOCIO", className="nav-section-title", id="sidebar-nav-title"),
         *[
             html.A([
                 html.Span(icon, className="nav-icon"),
                 html.Span([
-                    html.Strong(label, style={"display": "block", "lineHeight": "1.2"}),
-                    html.Span(sublabel, style={"fontSize": "0.72rem", "color": "#8080a0"}),
+                    html.Strong(
+                        label,
+                        id=f"nav-label-{href.strip('/')}",
+                        style={"display": "block", "lineHeight": "1.2"},
+                    ),
+                    html.Span(
+                        sublabel,
+                        id=f"nav-sublabel-{href.strip('/')}",
+                        style={"fontSize": "0.72rem", "color": "#8080a0"},
+                    ),
                 ]),
             ],
             href=href,
@@ -111,9 +119,9 @@ sidebar = html.Div([
 
     # ── Footer ────────────────────────────────────────────────────────────────
     html.Div([
-        "Dash + Plotly · Python",
+        html.Span("Dash + Plotly · Python", id="sidebar-footer-line1"),
         html.Br(),
-        "SCY1101 · 2026",
+        html.Span("SCY1101 · 2026", id="sidebar-footer-line2"),
     ], id="sidebar-footer"),
 ], id="sidebar")
 
@@ -137,11 +145,13 @@ app.layout = html.Div([
 @app.callback(
     Output("page-content", "children"),
     Input("url", "pathname"),
+    Input("global-lang", "value"),
 )
-def render_page(pathname):
+def render_page(pathname, lang):
+    lang = normalize_lang(lang)
     if pathname in (None, "/", ""):
         # Redirigir a vista ejecutiva por defecto
-        return page_ejecutiva.layout()
+        return page_ejecutiva.layout(lang)
     pathname = pathname.lower().strip("/")
     pages = {
         "ejecutiva":      page_ejecutiva.layout,
@@ -157,12 +167,48 @@ def render_page(pathname):
     }
     fn = pages.get(pathname)
     if fn:
-        return fn()
+        try:
+            return fn(lang)
+        except TypeError:
+            return fn()
     return html.Div([
-        html.H2("404 – Página no encontrada"),
-        html.P(f"La ruta '{pathname}' no existe."),
-        html.A("Volver al inicio", href="/ejecutiva"),
+        html.H2(tr("404 – Página no encontrada", lang)),
+        html.P(f"{tr('La ruta', lang)} '{pathname}' {tr('no existe.', lang)}"),
+        html.A(tr("Volver al inicio", lang), href="/ejecutiva"),
     ], style={"padding": "40px"})
+
+
+@app.callback(
+    Output("sidebar-title", "children"),
+    Output("sidebar-subtitle", "children"),
+    Output("sidebar-lang-title", "children"),
+    Output("sidebar-nav-title", "children"),
+    Output("nav-label-ejecutiva", "children"),
+    Output("nav-sublabel-ejecutiva", "children"),
+    Output("nav-label-operativa", "children"),
+    Output("nav-sublabel-operativa", "children"),
+    Output("nav-label-tecnica", "children"),
+    Output("nav-sublabel-tecnica", "children"),
+    Output("sidebar-footer-line1", "children"),
+    Output("sidebar-footer-line2", "children"),
+    Input("global-lang", "value"),
+)
+def translate_sidebar_shell(lang):
+    lang = normalize_lang(lang)
+    return (
+        tr("Sales & Marketing\nML Dashboard", lang),
+        tr("Proyecto de Ciencia de Datos", lang),
+        tr("IDIOMA", lang),
+        tr("VISTAS DE NEGOCIO", lang),
+        tr("Vista Ejecutiva", lang),
+        tr("Decisiones estratégicas", lang),
+        tr("Vista Operativa", lang),
+        tr("Ejecución de campañas", lang),
+        tr("Vista Técnica", lang),
+        tr("Arquitectura y detalle ML", lang),
+        tr("Dash + Plotly · Python", lang),
+        tr("SCY1101 · 2026", lang),
+    )
 
 
 # ── Callback para resaltar enlace activo en el sidebar ───────────────────────

@@ -9,18 +9,20 @@ import pandas as pd
 import numpy as np
 
 from dashboard.data_loader import get_classification_results
+from dashboard.i18n import tr, normalize_lang
 from dashboard.plot_helpers import add_non_overlapping_vline_labels
 
 PALETTE = px.colors.qualitative.Set2
 
 
-def layout():
+def layout(lang=None):
+    lang = normalize_lang(lang)
     return html.Div([
         # ── Encabezado ────────────────────────────────────────────────────────
         html.Div([
-            html.H1("📉 Evaluación de Modelos Supervisados"),
-            html.P("Comparativa entre Random Forest y Regresión Logística para "
-                   "clasificación (subscription_type) y regresión (total_spent)."),
+            html.H1(tr("📉 Evaluación de Modelos Supervisados", lang)),
+            html.P(tr("Comparativa entre Random Forest y Regresión Logística para "
+                      "clasificación (subscription_type) y regresión (total_spent).", lang)),
         ], className="page-header"),
 
         # ── KPIs ──────────────────────────────────────────────────────────────
@@ -28,17 +30,17 @@ def layout():
 
         # ── Sección 1: Matrices de Confusión ──────────────────────────────────
         html.Div([
-            html.H3("Matrices de Confusión"),
-            html.P("Verdaderos / Falsos positivos y negativos de cada modelo "
-                   "en el conjunto de test.", className="card-desc"),
+            html.H3(tr("Matrices de Confusión", lang)),
+            html.P(tr("Verdaderos / Falsos positivos y negativos de cada modelo "
+                      "en el conjunto de test.", lang), className="card-desc"),
             html.Div(className="grid-2", children=[
                 html.Div([
-                    html.Div("🌲 Random Forest", className="badge-rf",
+                    html.Div(tr("🌲 Random Forest", lang), className="badge-rf",
                              style={"marginBottom": "10px", "display": "inline-block"}),
                     dcc.Graph(id="eval-cm-rf"),
                 ]),
                 html.Div([
-                    html.Div("📐 Regresión Logística", className="badge-lr",
+                    html.Div(tr("📐 Regresión Logística", lang), className="badge-lr",
                              style={"marginBottom": "10px", "display": "inline-block"}),
                     dcc.Graph(id="eval-cm-lr"),
                 ]),
@@ -47,8 +49,8 @@ def layout():
 
         # ── Sección 2: Curvas ROC ─────────────────────────────────────────────
         html.Div([
-            html.H3("Curvas ROC"),
-            html.P("Relación TPR / FPR a distintos umbrales de decisión.",
+                 html.H3(tr("Curvas ROC", lang)),
+                 html.P(tr("Relación TPR / FPR a distintos umbrales de decisión.", lang),
                    className="card-desc"),
             dcc.Graph(id="eval-roc-curves"),
             html.Div([
@@ -59,19 +61,19 @@ def layout():
 
         # ── Sección 3: Comparativa de métricas ───────────────────────────────
         html.Div([
-            html.H3("Comparativa de Métricas de Clasificación"),
-            html.P("Precision, Recall y F1-Score por clase y modelo.",
+                 html.H3(tr("Comparativa de Métricas de Clasificación", lang)),
+                 html.P(tr("Precision, Recall y F1-Score por clase y modelo.", lang),
                    className="card-desc"),
             dcc.Graph(id="eval-metrics-compare"),
         ], className="dashboard-card"),
 
         # ── Sección 4: Distribución de probabilidades ─────────────────────────
         html.Div([
-            html.H3("Distribución de Probabilidades Predichas"),
-            html.P("Histograma de las probabilidades asignadas a cada clase "
-                   "para detectar calibración del modelo.", className="card-desc"),
+            html.H3(tr("Distribución de Probabilidades Predichas", lang)),
+            html.P(tr("Histograma de las probabilidades asignadas a cada clase "
+                      "para detectar calibración del modelo.", lang), className="card-desc"),
             html.Div([
-                html.Span("Modelo:", className="control-label"),
+                html.Span(tr("Modelo:", lang), className="control-label"),
                 dcc.RadioItems(
                     id="eval-prob-model",
                     options=[
@@ -88,8 +90,8 @@ def layout():
 
         # ── Sección 5: Regresión ─────────────────────────────────────────────
         html.Div([
-            html.H3("Modelos de Regresión – Predicción de total_spent"),
-            html.P("RMSE y R² de Regresión Lineal vs Random Forest Regressor.",
+                 html.H3(tr("Modelos de Regresión – Predicción de total_spent", lang)),
+                 html.P(tr("RMSE y R² de Regresión Lineal vs Random Forest Regressor.", lang),
                    className="card-desc"),
             html.Div(className="grid-2", children=[
                 dcc.Graph(id="eval-reg-rmse"),
@@ -104,11 +106,11 @@ def layout():
 
         # ── Sección 6: Upselling ─────────────────────────────────────────────
         html.Div([
-            html.H3("Simulación de Campaña de Upselling"),
-            html.P("Distribución de probabilidades de upgrade para clientes "
-                   "actualmente en plan Básico.", className="card-desc"),
+            html.H3(tr("Simulación de Campaña de Upselling", lang)),
+            html.P(tr("Distribución de probabilidades de upgrade para clientes "
+                      "actualmente en plan Básico.", lang), className="card-desc"),
             html.Div([
-                html.Span("Umbral de selección:", className="control-label"),
+                html.Span(tr("Umbral de selección:", lang), className="control-label"),
                 dcc.Slider(
                     id="eval-upsell-threshold",
                     min=0.1, max=0.95, step=0.05, value=0.75,
@@ -126,8 +128,10 @@ def register_callbacks(app):
     @app.callback(
         Output("eval-kpi-row", "children"),
         Input("eval-prob-model", "value"),
+        Input("global-lang", "value"),
     )
-    def update_kpis(model):
+    def update_kpis(model, lang):
+        lang = normalize_lang(lang)
         res = get_classification_results()
         auc_rf = res["auc_rf"]
         auc_lr = res["auc_lr"]
@@ -137,16 +141,16 @@ def register_callbacks(app):
 
         return [
             html.Div([html.Div(f"{auc_rf:.4f}", className="kpi-value"),
-                      html.Div("AUC – Random Forest", className="kpi-label")],
+                      html.Div(tr("AUC – Random Forest", lang), className="kpi-label")],
                      className="kpi-card blue"),
             html.Div([html.Div(f"{auc_lr:.4f}", className="kpi-value"),
-                      html.Div("AUC – Regresión Logística", className="kpi-label")],
+                      html.Div(tr("AUC – Regresión Logística", lang), className="kpi-label")],
                      className="kpi-card purple"),
             html.Div([html.Div(f"{rf_reg.get('RMSE', 0):.1f}", className="kpi-value"),
-                      html.Div("RMSE – RF Regressor", className="kpi-label")],
+                      html.Div(tr("RMSE – RF Regressor", lang), className="kpi-label")],
                      className="kpi-card orange"),
             html.Div([html.Div(f"{rf_reg.get('R2', 0):.4f}", className="kpi-value"),
-                      html.Div("R² – RF Regressor", className="kpi-label")],
+                      html.Div(tr("R² – RF Regressor", lang), className="kpi-label")],
                      className="kpi-card green"),
         ]
 
@@ -154,19 +158,23 @@ def register_callbacks(app):
         Output("eval-cm-rf", "figure"),
         Output("eval-cm-lr", "figure"),
         Input("eval-prob-model", "value"),
+        Input("global-lang", "value"),
     )
-    def update_cms(model):
+    def update_cms(model, lang):
+        lang = normalize_lang(lang)
         res = get_classification_results()
         return (
-            _cm_fig(res["cm_rf"], "Conf. Matrix – Random Forest", "Blues"),
-            _cm_fig(res["cm_lr"], "Conf. Matrix – Reg. Logística", "Purples"),
+            _cm_fig(res["cm_rf"], tr("Conf. Matrix – Random Forest", lang), "Blues", lang),
+            _cm_fig(res["cm_lr"], tr("Conf. Matrix – Reg. Logística", lang), "Purples", lang),
         )
 
     @app.callback(
         Output("eval-roc-curves", "figure"),
         Input("eval-prob-model", "value"),
+        Input("global-lang", "value"),
     )
-    def update_roc(model):
+    def update_roc(model, lang):
+        lang = normalize_lang(lang)
         from sklearn.metrics import roc_curve
         res = get_classification_results()
         y_test = res["y_test"]
@@ -190,7 +198,7 @@ def register_callbacks(app):
             line=dict(color="#999", width=1.5, dash="dash"),
         ))
         fig.update_layout(
-            title="Curvas ROC – Clasificación de subscription_type",
+            title=tr("Curvas ROC – Clasificación de subscription_type", lang),
             xaxis_title="False Positive Rate", yaxis_title="True Positive Rate",
             paper_bgcolor="white", plot_bgcolor="#fafafa",
             font_family="Segoe UI",
@@ -202,8 +210,10 @@ def register_callbacks(app):
     @app.callback(
         Output("eval-metrics-compare", "figure"),
         Input("eval-prob-model", "value"),
+        Input("global-lang", "value"),
     )
-    def update_metrics_compare(model):
+    def update_metrics_compare(model, lang):
+        lang = normalize_lang(lang)
         res = get_classification_results()
         rows = []
         for name, report in [("Random Forest", res["report_rf"]),
@@ -230,7 +240,7 @@ def register_callbacks(app):
             df_melt, x="Métrica", y="Valor",
             color="Modelo_Clase",
             barmode="group",
-            title="Precision / Recall / F1-Score por Modelo y Clase",
+            title=tr("Precision / Recall / F1-Score por Modelo y Clase", lang),
             color_discrete_sequence=px.colors.qualitative.Set1,
             text_auto=".2f",
         )
@@ -245,8 +255,10 @@ def register_callbacks(app):
     @app.callback(
         Output("eval-prob-dist", "figure"),
         Input("eval-prob-model", "value"),
+        Input("global-lang", "value"),
     )
-    def update_prob_dist(model):
+    def update_prob_dist(model, lang):
+        lang = normalize_lang(lang)
         res = get_classification_results()
         probs = res["probs_rf"] if model == "rf" else res["probs_lr"]
         y_test = res["y_test"]
@@ -258,7 +270,7 @@ def register_callbacks(app):
         fig = px.histogram(
             df_prob, x="Probabilidad", color="Clase Real",
             nbins=40, barmode="overlay",
-            title=f"Distribución de Probabilidades – {label}",
+            title=f"{tr('Distribución de Probabilidades', lang)} – {label}",
             color_discrete_map={"Básico (0)": "#3b82f6", "Anual (1)": "#22c55e"},
             opacity=0.75,
         )
@@ -267,7 +279,7 @@ def register_callbacks(app):
             lines=[
                 {
                     "x": 0.5,
-                    "text": "Umbral 0.5",
+                    "text": tr("Umbral 0.5", lang),
                     "line_color": "#ef4444",
                     "line_dash": "dash",
                 }
@@ -286,8 +298,10 @@ def register_callbacks(app):
         Output("eval-reg-rmse", "figure"),
         Output("eval-reg-r2", "figure"),
         Input("eval-prob-model", "value"),
+        Input("global-lang", "value"),
     )
-    def update_reg(model):
+    def update_reg(model, lang):
+        lang = normalize_lang(lang)
         res = get_classification_results()
         reg = res["reg_results"]
         df_reg = pd.DataFrame([
@@ -297,7 +311,7 @@ def register_callbacks(app):
 
         fig_rmse = px.bar(
             df_reg, x="Modelo", y="RMSE",
-            title="RMSE por Modelo (menor = mejor)",
+            title=tr("RMSE por Modelo (menor = mejor)", lang),
             color="Modelo", color_discrete_sequence=PALETTE,
             text_auto=".2f",
         )
@@ -309,7 +323,7 @@ def register_callbacks(app):
 
         fig_r2 = px.bar(
             df_reg, x="Modelo", y="R²",
-            title="R² por Modelo (mayor = mejor)",
+            title=tr("R² por Modelo (mayor = mejor)", lang),
             color="Modelo", color_discrete_sequence=PALETTE,
             text_auto=".4f",
         )
@@ -324,8 +338,10 @@ def register_callbacks(app):
         Output("eval-upsell-chart", "figure"),
         Output("eval-upsell-summary", "children"),
         Input("eval-upsell-threshold", "value"),
+        Input("global-lang", "value"),
     )
-    def update_upsell(threshold):
+    def update_upsell(threshold, lang):
+        lang = normalize_lang(lang)
         res = get_classification_results()
         probs = res["probs_upsell"]
         n_basicos = res["n_basicos"]
@@ -334,8 +350,8 @@ def register_callbacks(app):
 
         fig = px.histogram(
             probs, nbins=40,
-            title="Probabilidades de Upgrade – Clientes Básicos",
-            labels={"value": "P(upgrade)", "count": "Cantidad de clientes"},
+            title=tr("Probabilidades de Upgrade – Clientes Básicos", lang),
+            labels={"value": "P(upgrade)", "count": tr("Cantidad de clientes", lang)},
             color_discrete_sequence=["#3b82f6"],
             opacity=0.8,
         )
@@ -344,7 +360,7 @@ def register_callbacks(app):
             lines=[
                 {
                     "x": float(threshold),
-                    "text": f"Umbral: {threshold:.0%}",
+                    "text": f"{tr('Umbral', lang)}: {threshold:.0%}",
                     "line_color": "#ef4444",
                     "line_dash": "dash",
                 }
@@ -359,21 +375,21 @@ def register_callbacks(app):
         )
 
         summary = (
-            f"Con umbral {threshold:.0%}: se identifican {n_objetivo:,} de {n_basicos:,} "
-            f"clientes básicos ({n_objetivo/max(n_basicos,1)*100:.1f}%) "
-            f"como candidatos de alta probabilidad de upgrade a plan Anual."
+            f"{tr('Con umbral', lang)} {threshold:.0%}: {tr('se identifican', lang)} {n_objetivo:,} {tr('de', lang)} {n_basicos:,} "
+            f"{tr('clientes básicos', lang)} ({n_objetivo/max(n_basicos,1)*100:.1f}%) "
+            f"{tr('como candidatos de alta probabilidad de upgrade a plan Anual.', lang)}"
         )
         return fig, summary
 
 
-def _cm_fig(cm, title, colorscale):
+def _cm_fig(cm, title, colorscale, lang):
     labels = ["Básico (0)", "Anual (1)"]
     fig = px.imshow(
         cm, text_auto=True,
         x=labels, y=labels,
         color_continuous_scale=colorscale,
         title=title,
-        labels=dict(x="Predicción", y="Real", color="Cantidad"),
+        labels=dict(x=tr("Predicción", lang), y=tr("Real", lang), color=tr("Cantidad", lang)),
         aspect="equal",
     )
     fig.update_layout(

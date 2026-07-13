@@ -14,12 +14,14 @@ from dashboard.data_loader import (
     COLS_NUMERICAS,
     COLS_CATEGORICAS,
 )
+from dashboard.i18n import tr, normalize_lang
 from dashboard.plot_helpers import apply_outside_text_anti_overlap
 
 PALETTE = px.colors.qualitative.Set2
 
 
-def layout():
+def layout(lang=None):
+    lang = normalize_lang(lang)
     df_enc = get_df_encoded()
     df_clean = get_df_clean()
 
@@ -39,39 +41,39 @@ def layout():
     return html.Div([
         # ── Encabezado ────────────────────────────────────────────────────────
         html.Div([
-            html.H1("🔧 Transformación de Datos"),
-            html.P("Proceso de limpieza, codificación y preparación del dataset "
-                   "para el modelado ML."),
+            html.H1(tr("🔧 Transformación de Datos", lang)),
+            html.P(tr("Proceso de limpieza, codificación y preparación del dataset "
+                      "para el modelado ML.", lang)),
         ], className="page-header"),
 
         # ── KPIs ──────────────────────────────────────────────────────────────
         html.Div([
             html.Div([html.Div(f"{n_enc:,}", className="kpi-value"),
-                      html.Div("Registros finales", className="kpi-label")],
+                      html.Div(tr("Registros finales", lang), className="kpi-label")],
                      className="kpi-card green"),
             html.Div([html.Div(str(n_cols_enc), className="kpi-value"),
-                      html.Div("Columnas finales", className="kpi-label")],
+                      html.Div(tr("Columnas finales", lang), className="kpi-label")],
                      className="kpi-card blue"),
             html.Div([html.Div(str(nulos_enc), className="kpi-value"),
-                      html.Div("Nulos en dataset final", className="kpi-label")],
+                      html.Div(tr("Nulos en dataset final", lang), className="kpi-label")],
                      className="kpi-card orange"),
             html.Div([html.Div(str(dtypes_int + dtypes_float), className="kpi-value"),
-                      html.Div("Columnas numéricas", className="kpi-label")],
+                      html.Div(tr("Columnas numéricas", lang), className="kpi-label")],
                      className="kpi-card purple"),
         ], className="kpi-row"),
 
         # ── Pipeline de transformación ────────────────────────────────────────
         html.Div([
-            html.H3("Pipeline de Transformación"),
-            html.P("Pasos aplicados al dataset original para obtener el dataset limpio codificado.",
+                 html.H3(tr("Pipeline de Transformación", lang)),
+                 html.P(tr("Pasos aplicados al dataset original para obtener el dataset limpio codificado.", lang),
                    className="card-desc"),
-            _render_pipeline_steps(),
+            _render_pipeline_steps(lang),
         ], className="dashboard-card"),
 
         # ── Tipos de datos ─────────────────────────────────────────────────────
         html.Div([
-            html.H3("Composición de Tipos de Datos (Dataset Codificado)"),
-            html.P("Distribución de tipos de datos en el dataset final.",
+                 html.H3(tr("Composición de Tipos de Datos (Dataset Codificado)", lang)),
+                 html.P(tr("Distribución de tipos de datos en el dataset final.", lang),
                    className="card-desc"),
         html.Div(className="grid-2", children=[
                 dcc.Graph(id="trans-dtypes-pie"),
@@ -81,11 +83,11 @@ def layout():
 
         # ── Estadísticas descriptivas ─────────────────────────────────────────
         html.Div([
-            html.H3("Estadísticas Descriptivas – Dataset Codificado"),
-            html.P("Resumen de media, desviación estándar, mínimo y máximo por variable.",
+            html.H3(tr("Estadísticas Descriptivas – Dataset Codificado", lang)),
+            html.P(tr("Resumen de media, desviación estándar, mínimo y máximo por variable.", lang),
                    className="card-desc"),
             html.Div([
-                html.Span("Variable:", className="control-label"),
+                html.Span(tr("Variable:", lang), className="control-label"),
                 dcc.Dropdown(
                     id="trans-num-col",
                     options=[{"label": c, "value": c}
@@ -100,19 +102,19 @@ def layout():
 
         # ── Vista de muestra del dataset ──────────────────────────────────────
         html.Div([
-            html.H3("Muestra del Dataset Codificado (primeras 10 filas)"),
-            html.P("Vista rápida del dataset final listo para modelado.",
+                 html.H3(tr("Muestra del Dataset Codificado (primeras 10 filas)", lang)),
+                 html.P(tr("Vista rápida del dataset final listo para modelado.", lang),
                    className="card-desc"),
             _render_sample_table(df_enc),
         ], className="dashboard-card"),
 
         # ── Codificación de categóricas ───────────────────────────────────────
         html.Div([
-            html.H3("Codificación de Variables Categóricas"),
-            html.P("Variables codificadas numéricamente para el modelado supervisado.",
+            html.H3(tr("Codificación de Variables Categóricas", lang)),
+            html.P(tr("Variables codificadas numéricamente para el modelado supervisado.", lang),
                    className="card-desc"),
             html.Div([
-                html.Span("Variable a comparar:", className="control-label"),
+                html.Span(tr("Variable a comparar:", lang), className="control-label"),
                 dcc.Dropdown(
                     id="trans-enc-col",
                     options=[{"label": c, "value": c}
@@ -128,7 +130,8 @@ def layout():
     ])
 
 
-def _render_pipeline_steps():
+def _render_pipeline_steps(lang=None):
+    lang = normalize_lang(lang)
     steps = [
         ("1️⃣", "Carga del dataset bruto",
          "Lectura del archivo Excel con datos sucios (nulls, outliers, inconsistencias)."),
@@ -150,8 +153,8 @@ def _render_pipeline_steps():
         items.append(html.Div([
             html.Div(icon, style={"fontSize": "1.5rem", "marginRight": "12px"}),
             html.Div([
-                html.Strong(title, style={"display": "block", "marginBottom": "2px"}),
-                html.Span(desc, style={"fontSize": "0.82rem", "color": "#555"}),
+                html.Strong(tr(title, lang), style={"display": "block", "marginBottom": "2px"}),
+                html.Span(tr(desc, lang), style={"fontSize": "0.82rem", "color": "#555"}),
             ])
         ], style={
             "display": "flex", "alignItems": "flex-start",
@@ -187,19 +190,21 @@ def register_callbacks(app):
         Output("trans-dtypes-pie", "figure"),
         Output("trans-dtypes-bar", "figure"),
         Input("trans-num-col", "value"),
+        Input("global-lang", "value"),
     )
-    def update_dtypes(_cols):
+    def update_dtypes(_cols, lang):
+        lang = normalize_lang(lang)
         df = get_df_encoded()
         dtypes = df.dtypes.astype(str).value_counts().reset_index()
         dtypes.columns = ["Tipo", "Cantidad"]
         pie = px.pie(dtypes, values="Cantidad", names="Tipo",
-                     title="Distribución de Tipos",
+                     title=tr("Distribución de Tipos", lang),
                      color_discrete_sequence=PALETTE, hole=0.4)
         pie.update_layout(paper_bgcolor="white", font_family="Segoe UI",
                           margin=dict(t=50, b=20))
 
         bar = px.bar(dtypes, x="Tipo", y="Cantidad",
-                     title="Cantidad de Columnas por Tipo",
+                     title=tr("Cantidad de Columnas por Tipo", lang),
                      color="Tipo", color_discrete_sequence=PALETTE,
                      text="Cantidad")
         apply_outside_text_anti_overlap(bar, min_top=70)
@@ -211,8 +216,10 @@ def register_callbacks(app):
     @app.callback(
         Output("trans-stats-chart", "figure"),
         Input("trans-num-col", "value"),
+        Input("global-lang", "value"),
     )
-    def update_stats(cols):
+    def update_stats(cols, lang):
+        lang = normalize_lang(lang)
         if not cols:
             return go.Figure()
         df = get_df_encoded()
@@ -229,7 +236,7 @@ def register_callbacks(app):
             ))
         fig.update_layout(
             barmode="group",
-            title="Estadísticas Descriptivas por Variable",
+            title=tr("Estadísticas Descriptivas por Variable", lang),
             paper_bgcolor="white", plot_bgcolor="#fafafa",
             font_family="Segoe UI",
             margin=dict(t=50, b=80, l=60, r=20),
@@ -240,8 +247,10 @@ def register_callbacks(app):
     @app.callback(
         Output("trans-enc-chart", "figure"),
         Input("trans-enc-col", "value"),
+        Input("global-lang", "value"),
     )
-    def update_encoding(col):
+    def update_encoding(col, lang):
+        lang = normalize_lang(lang)
         if not col:
             return go.Figure()
         df = get_df_encoded()
@@ -252,11 +261,11 @@ def register_callbacks(app):
         conteo.columns = [col, "count"]
         fig = px.bar(
             conteo, x=col, y="count",
-            title=f"Distribución de '{col}' (Valor Codificado)",
+            title=f"{tr('Distribución de', lang)} '{col}' ({tr('Valor Codificado', lang)})",
             color=col,
             color_discrete_sequence=PALETTE,
             text="count",
-            labels={col: f"{col} (código)", "count": "Cantidad"},
+            labels={col: f"{col} ({tr('código', lang)})", "count": tr("Cantidad", lang)},
         )
         apply_outside_text_anti_overlap(fig, min_top=70)
         fig.update_layout(

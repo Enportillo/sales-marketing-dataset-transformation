@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 
 from dashboard.data_loader import get_optimization_results
+from dashboard.i18n import tr, normalize_lang
 from dashboard.plot_helpers import add_hline_label
 
 PALETTE = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6"]
@@ -19,19 +20,23 @@ VERSION_COLORS = {
 }
 
 
-def layout():
+def layout(lang=None):
+    lang = normalize_lang(lang)
     return html.Div([
         # ── Encabezado ────────────────────────────────────────────────────────
         html.Div([
-            html.H1("⚙️ Optimización de Hiperparámetros"),
-            html.P("Comparativa de versiones del modelo Random Forest con "
-                   "GridSearchCV. Evolución del ROC-AUC por versión."),
+            html.H1(tr("⚙️ Optimización de Hiperparámetros", lang)),
+            html.P(tr("Comparativa de versiones del modelo Random Forest con "
+                      "GridSearchCV. Evolución del ROC-AUC por versión.", lang)),
         ], className="page-header"),
 
         html.Div([
-            "⏳ Este módulo ejecuta GridSearchCV al cargar la página. "
-            "El proceso puede tardar 1-2 minutos. "
-            "Los resultados se almacenan en caché tras la primera ejecución."
+            tr(
+                "⏳ Este módulo ejecuta GridSearchCV al cargar la página. "
+                "El proceso puede tardar 1-2 minutos. "
+                "Los resultados se almacenan en caché tras la primera ejecución.",
+                lang,
+            )
         ], className="insight-box warning"),
 
         # ── KPIs de versiones ─────────────────────────────────────────────────
@@ -39,24 +44,27 @@ def layout():
 
         # ── Evolución del AUC ─────────────────────────────────────────────────
         html.Div([
-            html.H3("Evolución del ROC-AUC por Versión"),
-            html.P("Comparativa de rendimiento entre las versiones del modelo.",
+                 html.H3(tr("Evolución del ROC-AUC por Versión", lang)),
+                 html.P(tr("Comparativa de rendimiento entre las versiones del modelo.", lang),
                    className="card-desc"),
             dcc.Graph(id="opt-auc-evolution"),
             html.Div([
-                "💡 Cada versión explora una hipótesis distinta: "
-                "v1 usa todas las features, v2 solo comportamiento, "
-                "v3 redefine el target (Annual como positivo)."
+                tr(
+                    "💡 Cada versión explora una hipótesis distinta: "
+                    "v1 usa todas las features, v2 solo comportamiento, "
+                    "v3 redefine el target (Annual como positivo).",
+                    lang,
+                )
             ], className="insight-box"),
         ], className="dashboard-card"),
 
         # ── Matrices de confusión por versión ─────────────────────────────────
         html.Div([
-            html.H3("Matrices de Confusión por Versión"),
-            html.P("Distribución de errores de cada variante del modelo.",
+            html.H3(tr("Matrices de Confusión por Versión", lang)),
+            html.P(tr("Distribución de errores de cada variante del modelo.", lang),
                    className="card-desc"),
             html.Div([
-                html.Span("Seleccionar versión:", className="control-label"),
+                html.Span(tr("Seleccionar versión:", lang), className="control-label"),
                 dcc.Dropdown(
                     id="opt-version-select",
                     options=[],   # se pobla en callback
@@ -70,23 +78,23 @@ def layout():
 
         # ── Mejores hiperparámetros ────────────────────────────────────────────
         html.Div([
-            html.H3("Mejores Hiperparámetros por Versión"),
-            html.P("Resultado de GridSearchCV (cv=3, scoring='roc_auc').",
+                 html.H3(tr("Mejores Hiperparámetros por Versión", lang)),
+                 html.P(tr("Resultado de GridSearchCV (cv=3, scoring='roc_auc').", lang),
                    className="card-desc"),
             html.Div(id="opt-params-table"),
         ], className="dashboard-card"),
 
         # ── Comparativa de métricas ───────────────────────────────────────────
         html.Div([
-            html.H3("Comparativa de Precision, Recall y F1 por Versión"),
-            html.P("Métricas de clasificación en el conjunto de test.",
+                 html.H3(tr("Comparativa de Precision, Recall y F1 por Versión", lang)),
+                 html.P(tr("Métricas de clasificación en el conjunto de test.", lang),
                    className="card-desc"),
             dcc.Graph(id="opt-metrics-chart"),
         ], className="dashboard-card"),
 
         # ── Resumen ejecutivo ─────────────────────────────────────────────────
         html.Div([
-            html.H3("Resumen y Decisión Final"),
+            html.H3(tr("Resumen y Decisión Final", lang)),
             html.Div(id="opt-summary-text"),
         ], className="dashboard-card"),
     ])
@@ -103,8 +111,10 @@ def register_callbacks(app):
         Output("opt-metrics-chart", "figure"),
         Output("opt-summary-text", "children"),
         Input("opt-version-select", "id"),   # trigger al cargar
+        Input("global-lang", "value"),
     )
-    def load_results(_=None):
+    def load_results(_=None, lang=None):
+        lang = normalize_lang(lang)
         res = get_optimization_results()
         versions = res["versions"]
 
@@ -130,7 +140,7 @@ def register_callbacks(app):
         })
         fig_auc = px.bar(
             df_auc, x="Versión", y="ROC-AUC",
-            title="ROC-AUC por Versión del Modelo",
+            title=tr("ROC-AUC por Versión del Modelo", lang),
             color="Versión",
             color_discrete_sequence=PALETTE,
             text_auto=".4f",
@@ -138,7 +148,7 @@ def register_callbacks(app):
         add_hline_label(
             fig_auc,
             y=0.5,
-            text="Línea base aleatoria (0.50)",
+            text=tr("Línea base aleatoria (0.50)", lang),
             line_color="#999999",
             line_dash="dash",
         )
@@ -195,7 +205,7 @@ def register_callbacks(app):
         fig_metrics = px.bar(
             df_melt, x="Métrica", y="Valor",
             color="Versión_Clase", barmode="group",
-            title="Precision / Recall / F1 por Versión y Clase",
+            title=tr("Precision / Recall / F1 por Versión y Clase", lang),
             color_discrete_sequence=px.colors.qualitative.Set1,
             text_auto=".2f",
         )
@@ -210,19 +220,22 @@ def register_callbacks(app):
         best_v = versions[best_idx]
         summary = html.Div([
             html.P([
-                html.Strong("Mejor versión: "),
+                html.Strong(tr("Mejor versión: ", lang)),
                 f"{best_v['label']} con ROC-AUC = {best_v['auc']:.4f}"
             ]),
             html.P([
-                html.Strong("Mejores parámetros: "),
+                html.Strong(tr("Mejores parámetros: ", lang)),
                 str(best_v["best_params"])
             ]),
             html.P(
-                "El modelo Random Forest demuestra capacidad discriminatoria moderada "
-                "en todas las versiones. La reducción de features (v2) y la redefinición "
-                "del target (v3) exploran distintas hipótesis para mejorar el rendimiento. "
-                "Se recomienda continuar con ingeniería de features y evaluar "
-                "modelos ensamblados adicionales.",
+                tr(
+                    "El modelo Random Forest demuestra capacidad discriminatoria moderada "
+                    "en todas las versiones. La reducción de features (v2) y la redefinición "
+                    "del target (v3) exploran distintas hipótesis para mejorar el rendimiento. "
+                    "Se recomienda continuar con ingeniería de features y evaluar "
+                    "modelos ensamblados adicionales.",
+                    lang,
+                ),
                 style={"fontSize": "0.87rem", "color": "#444"},
             ),
         ])
@@ -232,8 +245,10 @@ def register_callbacks(app):
     @app.callback(
         Output("opt-cm-chart", "figure"),
         Input("opt-version-select", "value"),
+        Input("global-lang", "value"),
     )
-    def update_cm(version_idx):
+    def update_cm(version_idx, lang):
+        lang = normalize_lang(lang)
         if version_idx is None:
             return go.Figure()
         res = get_optimization_results()
@@ -246,7 +261,7 @@ def register_callbacks(app):
             x=labels, y=labels,
             color_continuous_scale="Blues",
             title=f"Conf. Matrix – {v['label']}",
-            labels=dict(x="Predicción", y="Real"),
+            labels=dict(x=tr("Predicción", lang), y=tr("Real", lang)),
             aspect="equal",
         )
         tn, fp, fn, tp = cm.ravel()

@@ -13,65 +13,76 @@ from dashboard.data_loader import (
     get_cluster_results,
     COLS_COMPORTAMIENTO,
 )
+from dashboard.i18n import tr, normalize_lang
 from dashboard.plot_helpers import add_hline_label
 
 PALETTE = ["#2ca02c", "#1f77b4", "#ff7f0e", "#9467bd", "#d62728"]
 CLUSTER_LABELS = {0: "🟢 Activos", 1: "🔵 Regulares", 2: "🟠 Esporádicos / En Riesgo"}
 
 
-def layout():
+def layout(lang=None):
+    lang = normalize_lang(lang)
     return html.Div([
         # ── Encabezado ────────────────────────────────────────────────────────
         html.Div([
-            html.H1("🤖 Modelado – Clustering KMeans"),
-            html.P("Segmentación de clientes mediante KMeans (K=3) sobre variables "
-                   "de comportamiento. Validación con método del codo y Silhouette Score."),
+            html.H1(tr("🤖 Modelado – Clustering KMeans", lang)),
+            html.P(tr("Segmentación de clientes mediante KMeans (K=3) sobre variables "
+                      "de comportamiento. Validación con método del codo y Silhouette Score.", lang)),
         ], className="page-header"),
 
         # ── Insight de negocio ────────────────────────────────────────────────
         html.Div([
-            "📌 Se utilizaron 6 variables de comportamiento: gasto total, ticket promedio, "
-            "frecuencia de compra (3 meses), visitas, páginas por sesión y tickets de soporte. "
-            "Se eligió K=3 por su interpretabilidad comercial."
+            tr(
+                "📌 Se utilizaron 6 variables de comportamiento: gasto total, ticket promedio, "
+                "frecuencia de compra (3 meses), visitas, páginas por sesión y tickets de soporte. "
+                "Se eligió K=3 por su interpretabilidad comercial.",
+                lang,
+            )
         ], className="insight-box"),
 
         # ── Sección 1: Validación matemática ──────────────────────────────────
         html.Div([
-            html.H3("Validación Matemática del Número de Clústeres"),
-            html.P("Método del Codo (Inercia) y Silhouette Score para K = 2..6.",
+                 html.H3(tr("Validación Matemática del Número de Clústeres", lang)),
+                 html.P(tr("Método del Codo (Inercia) y Silhouette Score para K = 2..6.", lang),
                    className="card-desc"),
             html.Div(className="grid-2", children=[
                 dcc.Graph(id="model-elbow"),
                 dcc.Graph(id="model-silhouette"),
             ]),
             html.Div([
-                "💡 El codo sugiere mejora decreciente a partir de K=4. "
-                "Silhouette favorece K=2 estadísticamente. "
-                "Se eligió K=3 por accionabilidad comercial: permite diseñar "
-                "estrategias diferenciadas sin perder simplicidad."
+                tr(
+                    "💡 El codo sugiere mejora decreciente a partir de K=4. "
+                    "Silhouette favorece K=2 estadísticamente. "
+                    "Se eligió K=3 por accionabilidad comercial: permite diseñar "
+                    "estrategias diferenciadas sin perder simplicidad.",
+                    lang,
+                )
             ], className="insight-box warning"),
         ], className="dashboard-card"),
 
         # ── Sección 2: Visualización PCA ──────────────────────────────────────
         html.Div([
-            html.H3("Visualización de Clústeres (PCA 2D)"),
-            html.P("Proyección de los clientes en 2 componentes principales "
-                   "para comunicar los perfiles de forma visual.",
+                 html.H3(tr("Visualización de Clústeres (PCA 2D)", lang)),
+                 html.P(tr("Proyección de los clientes en 2 componentes principales "
+                     "para comunicar los perfiles de forma visual.", lang),
                    className="card-desc"),
             dcc.Graph(id="model-pca-scatter"),
             html.Div([
-                "🔍 La transición gradual entre perfiles (sin fronteras rígidas) "
-                "sugiere que pequeños estímulos comerciales pueden mover clientes entre segmentos."
+                tr(
+                    "🔍 La transición gradual entre perfiles (sin fronteras rígidas) "
+                    "sugiere que pequeños estímulos comerciales pueden mover clientes entre segmentos.",
+                    lang,
+                )
             ], className="insight-box"),
         ], className="dashboard-card"),
 
         # ── Sección 3: Perfiles de clústeres ─────────────────────────────────
         html.Div([
-            html.H3("Perfilamiento de Clústeres (Centroides)"),
-            html.P("Media de cada variable de comportamiento por perfil de cliente.",
+            html.H3(tr("Perfilamiento de Clústeres (Centroides)", lang)),
+            html.P(tr("Media de cada variable de comportamiento por perfil de cliente.", lang),
                    className="card-desc"),
             html.Div([
-                html.Span("Variable a visualizar:", className="control-label"),
+                html.Span(tr("Variable a visualizar:", lang), className="control-label"),
                 dcc.Dropdown(
                     id="model-centroid-var",
                     options=[{"label": c, "value": c}
@@ -86,8 +97,8 @@ def layout():
 
         # ── Sección 4: Radar de perfiles ──────────────────────────────────────
         html.Div([
-            html.H3("Radar – Comparación de Perfiles"),
-            html.P("Vista de araña normalizada de los 3 perfiles de cliente.",
+                 html.H3(tr("Radar – Comparación de Perfiles", lang)),
+                 html.P(tr("Vista de araña normalizada de los 3 perfiles de cliente.", lang),
                    className="card-desc"),
             dcc.Graph(id="model-radar"),
             html.Div(className="grid-3", children=[
@@ -111,8 +122,8 @@ def layout():
 
         # ── Sección 5: Distribución de clientes ───────────────────────────────
         html.Div([
-            html.H3("Distribución de Clientes por Perfil"),
-            html.P("Tamaño de cada segmento para dimensionar campañas.",
+                 html.H3(tr("Distribución de Clientes por Perfil", lang)),
+                 html.P(tr("Tamaño de cada segmento para dimensionar campañas.", lang),
                    className="card-desc"),
             dcc.Graph(id="model-cluster-dist"),
         ], className="dashboard-card"),
@@ -125,8 +136,10 @@ def register_callbacks(app):
         Output("model-elbow", "figure"),
         Output("model-silhouette", "figure"),
         Input("model-centroid-var", "value"),
+        Input("global-lang", "value"),
     )
-    def update_validation(cols):
+    def update_validation(cols, lang):
+        lang = normalize_lang(lang)
         res = get_cluster_results()
         k_range = res["k_range"]
         inertias = res["inertias"]
@@ -141,9 +154,9 @@ def register_callbacks(app):
             line=dict(color="#3b82f6", width=2, dash="dash"),
         ))
         fig_elbow.update_layout(
-            title="Método del Codo (Inercia)",
-            xaxis_title="Número de Clústeres (K)",
-            yaxis_title="Inercia",
+            title=tr("Método del Codo (Inercia)", lang),
+            xaxis_title=tr("Número de Clústeres (K)", lang),
+            yaxis_title=tr("Inercia", lang),
             paper_bgcolor="white", plot_bgcolor="#fafafa",
             font_family="Segoe UI",
             margin=dict(t=50, b=40, l=60, r=20),
@@ -160,14 +173,14 @@ def register_callbacks(app):
         add_hline_label(
             fig_sil,
             y=float(silhouettes[1]),
-            text="K=3 elegido",
+            text=tr("K=3 elegido", lang),
             line_color="#f59e0b",
             line_dash="dot",
         )
         fig_sil.update_layout(
-            title="Validación Silhouette Score",
-            xaxis_title="Número de Clústeres (K)",
-            yaxis_title="Silhouette Score",
+            title=tr("Validación Silhouette Score", lang),
+            xaxis_title=tr("Número de Clústeres (K)", lang),
+            yaxis_title=tr("Silhouette Score", lang),
             paper_bgcolor="white", plot_bgcolor="#fafafa",
             font_family="Segoe UI",
             margin=dict(t=65, b=40, l=60, r=20),
@@ -177,8 +190,10 @@ def register_callbacks(app):
     @app.callback(
         Output("model-pca-scatter", "figure"),
         Input("model-centroid-var", "value"),
+        Input("global-lang", "value"),
     )
-    def update_pca(cols):
+    def update_pca(cols, lang):
+        lang = normalize_lang(lang)
         res = get_cluster_results()
         X_pca = res["X_pca"]
         labels = res["labels"]
@@ -195,10 +210,10 @@ def register_callbacks(app):
             color="Cluster",
             color_discrete_sequence=PALETTE,
             opacity=0.6,
-            title="Visualización de Clústeres de Clientes (PCA 2D)",
+            title=tr("Visualización de Clústeres de Clientes (PCA 2D)", lang),
             labels={
-                "PC1": f"Componente 1 ({var[0]*100:.1f}% varianza)",
-                "PC2": f"Componente 2 ({var[1]*100:.1f}% varianza)",
+                "PC1": f"{tr('Componente 1', lang)} ({var[0]*100:.1f}% {tr('varianza', lang)})",
+                "PC2": f"{tr('Componente 2', lang)} ({var[1]*100:.1f}% {tr('varianza', lang)})",
             },
         )
         fig.update_traces(marker_size=5)
@@ -206,7 +221,7 @@ def register_callbacks(app):
             paper_bgcolor="white", plot_bgcolor="#fafafa",
             font_family="Segoe UI",
             margin=dict(t=60, b=40, l=60, r=20),
-            legend_title="Perfil (Clúster)",
+            legend_title=tr("Perfil (Clúster)", lang),
             height=480,
         )
         return fig
@@ -214,8 +229,10 @@ def register_callbacks(app):
     @app.callback(
         Output("model-centroid-chart", "figure"),
         Input("model-centroid-var", "value"),
+        Input("global-lang", "value"),
     )
-    def update_centroids(cols):
+    def update_centroids(cols, lang):
+        lang = normalize_lang(lang)
         if not cols:
             return go.Figure()
         res = get_cluster_results()
@@ -234,7 +251,7 @@ def register_callbacks(app):
             df_melt, x="Variable", y="Media",
             color="Cluster",
             barmode="group",
-            title="Centroides por Variable de Comportamiento",
+            title=tr("Centroides por Variable de Comportamiento", lang),
             color_discrete_sequence=PALETTE,
             text_auto=".2f",
         )
@@ -242,15 +259,17 @@ def register_callbacks(app):
             paper_bgcolor="white", plot_bgcolor="#fafafa",
             font_family="Segoe UI",
             margin=dict(t=50, b=80, l=60, r=20),
-            legend_title="Perfil",
+            legend_title=tr("Perfil", lang),
         )
         return fig
 
     @app.callback(
         Output("model-radar", "figure"),
         Input("model-centroid-var", "value"),
+        Input("global-lang", "value"),
     )
-    def update_radar(cols):
+    def update_radar(cols, lang):
+        lang = normalize_lang(lang)
         res = get_cluster_results()
         centroids = res["centroids"]
         cols = res["cols"]
@@ -276,20 +295,22 @@ def register_callbacks(app):
             ))
         fig.update_layout(
             polar=dict(radialaxis=dict(visible=True, range=[0, 1])),
-            title="Radar de Perfiles de Cliente (Normalizado)",
+            title=tr("Radar de Perfiles de Cliente (Normalizado)", lang),
             paper_bgcolor="white",
             font_family="Segoe UI",
             margin=dict(t=60, b=40, l=60, r=60),
             height=450,
-            legend_title="Perfil",
+            legend_title=tr("Perfil", lang),
         )
         return fig
 
     @app.callback(
         Output("model-cluster-dist", "figure"),
         Input("model-centroid-var", "value"),
+        Input("global-lang", "value"),
     )
-    def update_dist(cols):
+    def update_dist(cols, lang):
+        lang = normalize_lang(lang)
         res = get_cluster_results()
         centroids = res["centroids"]
 
@@ -306,7 +327,7 @@ def register_callbacks(app):
 
         fig = px.pie(
             df_dist, values="Clientes", names="Perfil",
-            title="Distribución de Clientes por Perfil",
+            title=tr("Distribución de Clientes por Perfil", lang),
             color_discrete_sequence=PALETTE,
             hole=0.4,
         )
