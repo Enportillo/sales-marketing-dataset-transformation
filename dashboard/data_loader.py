@@ -78,6 +78,10 @@ N_JOBS = max(1, (os.cpu_count() or 2) - 1)
 MAX_ROWS_CLASSIFICATION = 12000
 MAX_ROWS_OPTIMIZATION = 6000
 
+# Umbrales de lectura ejecutiva (configurables por negocio)
+EXEC_AUC_READY = 0.65
+EXEC_AUC_MONITOR = 0.58
+
 
 def _sample_if_large(X: pd.DataFrame, y: pd.Series, max_rows: int, random_state: int = 42):
     """Reduce el dataset de entrenamiento cuando es grande para mejorar latencia UI."""

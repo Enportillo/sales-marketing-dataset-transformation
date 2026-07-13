@@ -1,5 +1,5 @@
 """
-Página 0 – Overview de Conversión a Nivel Usuario
+Vista Operativa – Ejecución de Campañas
 """
 
 from dash import dcc, html, Input, Output, dash_table
@@ -67,21 +67,21 @@ COL_TYPES = {
 def layout():
     return html.Div([
         html.Div([
-            html.H1(id="ov-main-title", children="🎯 Overview – Campaña de Conversión"),
+            html.H1(id="ops-main-title", children="🛠️ Vista Operativa"),
             html.P(
-                id="ov-main-subtitle",
+                id="ops-main-subtitle",
                 children=(
-                    "Identificación dinámica de usuarios objetivo según probabilidad "
-                    "de conversión. Ajusta el umbral para cambiar cobertura y foco comercial."
+                    "Ejecución diaria de campañas: priorización de clientes, monitoreo del "
+                    "flujo operativo y segmentación accionable."
                 ),
             ),
         ], className="page-header"),
 
         html.Div([
             html.Div([
-                html.Span(id="ov-threshold-label", children="Umbral de conversión:", className="control-label"),
+                html.Span(id="ops-threshold-label", children="Umbral operativo:", className="control-label"),
                 dcc.Slider(
-                    id="ov-threshold",
+                    id="ops-threshold",
                     min=0.10,
                     max=0.95,
                     step=0.01,
@@ -90,9 +90,9 @@ def layout():
                 ),
             ], style={"flex": "2"}),
             html.Div([
-                html.Span(id="ov-topn-label", children="Top usuarios a mostrar:", className="control-label"),
+                html.Span(id="ops-topn-label", children="Top usuarios a mostrar:", className="control-label"),
                 dcc.Dropdown(
-                    id="ov-topn",
+                    id="ops-topn",
                     options=[{"label": str(n), "value": n} for n in [10, 25, 50, 100, 250]],
                     value=50,
                     clearable=False,
@@ -101,42 +101,31 @@ def layout():
             ], style={"flex": "1", "minWidth": "220px"}),
         ], className="dashboard-card control-row"),
 
-        html.Div(id="ov-kpis", className="kpi-row"),
+        html.Div(id="ops-kpis", className="kpi-row"),
 
-        html.Div(id="ov-model-info", className="insight-box"),
+        html.Div(id="ops-model-info", className="insight-box"),
 
         html.Div([
-            html.H3(id="ov-dist-title", children="Distribución del Score de Conversión"),
+            html.H3(id="ops-dist-title", children="Distribución del Score de Conversión"),
             html.P(
-                id="ov-dist-desc",
-                children="Visualiza el corte dinámico del umbral y cuántos usuarios quedan como objetivo.",
+                id="ops-dist-desc",
+                children=(
+                    "Visualiza el corte dinámico del umbral y cuántos usuarios quedan "
+                    "como objetivo de campaña."
+                ),
                 className="card-desc",
             ),
-            dcc.Graph(id="ov-score-dist"),
+            dcc.Graph(id="ops-score-dist"),
         ], className="dashboard-card"),
 
-        html.Div(className="grid-2", children=[
-            html.Div([
-                html.H3(id="ov-channel-title", children="Tendencia por Canal de Adquisición"),
-                html.P(id="ov-channel-desc", children="Score promedio de conversión por canal.", className="card-desc"),
-                dcc.Graph(id="ov-channel-trend"),
-            ], className="dashboard-card"),
-            html.Div([
-                html.H3(id="ov-country-title", children="Tendencia por País"),
-                html.P(id="ov-country-desc", children="Top países por score promedio de conversión.", className="card-desc"),
-                dcc.Graph(id="ov-country-trend"),
-            ], className="dashboard-card"),
-        ]),
-
         html.Div([
-            html.H3(id="ov-target-title"),
+            html.H3(id="ops-target-title"),
             html.P(
-                "La tabla se actualiza automáticamente al mover el umbral. "
-                "Puedes ordenar y filtrar dentro de la grilla.",
+                "Tabla de ejecución diaria para asignación de responsables y seguimiento.",
                 className="card-desc",
             ),
             dash_table.DataTable(
-                id="ov-target-table",
+                id="ops-target-table",
                 columns=[],
                 data=[],
                 page_size=12,
@@ -184,48 +173,36 @@ def layout():
 def register_callbacks(app):
 
     @app.callback(
-        Output("ov-main-title", "children"),
-        Output("ov-main-subtitle", "children"),
-        Output("ov-threshold-label", "children"),
-        Output("ov-topn-label", "children"),
-        Output("ov-dist-title", "children"),
-        Output("ov-dist-desc", "children"),
-        Output("ov-channel-title", "children"),
-        Output("ov-channel-desc", "children"),
-        Output("ov-country-title", "children"),
-        Output("ov-country-desc", "children"),
-        Output("ov-kpis", "children"),
-        Output("ov-model-info", "children"),
-        Output("ov-score-dist", "figure"),
-        Output("ov-channel-trend", "figure"),
-        Output("ov-country-trend", "figure"),
-        Output("ov-target-title", "children"),
-        Output("ov-target-table", "columns"),
-        Output("ov-target-table", "data"),
-        Input("ov-threshold", "value"),
-        Input("ov-topn", "value"),
+        Output("ops-main-title", "children"),
+        Output("ops-main-subtitle", "children"),
+        Output("ops-threshold-label", "children"),
+        Output("ops-topn-label", "children"),
+        Output("ops-dist-title", "children"),
+        Output("ops-dist-desc", "children"),
+        Output("ops-kpis", "children"),
+        Output("ops-model-info", "children"),
+        Output("ops-score-dist", "figure"),
+        Output("ops-target-title", "children"),
+        Output("ops-target-table", "columns"),
+        Output("ops-target-table", "data"),
+        Input("ops-threshold", "value"),
+        Input("ops-topn", "value"),
         Input("global-lang", "value"),
     )
-    def update_overview(threshold, topn, lang):
+    def update_ops(threshold, topn, lang):
         lang = normalize_lang(lang)
         df = get_campaign_scores()
         if df.empty:
             empty = _empty_fig(tr("Datos no disponibles", lang))
             return (
-                tr("🎯 Overview – Campaña de Conversión", lang),
-                tr("Identificación dinámica de usuarios objetivo según probabilidad de conversión. Ajusta el umbral para cambiar cobertura y foco comercial.", lang),
-                tr("Umbral de conversión:", lang),
+                tr("🛠️ Vista Operativa", lang),
+                tr("Ejecución diaria de campañas: priorización de clientes, monitoreo del flujo operativo y segmentación accionable.", lang),
+                tr("Umbral operativo:", lang),
                 tr("Top usuarios a mostrar:", lang),
                 tr("Distribución del Score de Conversión", lang),
-                tr("Visualiza el corte dinámico del umbral y cuántos usuarios quedan como objetivo.", lang),
-                tr("Tendencia por Canal de Adquisición", lang),
-                tr("Score promedio de conversión por canal.", lang),
-                tr("Tendencia por País", lang),
-                tr("Top países por score promedio de conversión.", lang),
+                tr("Visualiza el corte dinámico del umbral y cuántos usuarios quedan como objetivo de campaña.", lang),
                 [],
                 tr("Modelo no disponible", lang),
-                empty,
-                empty,
                 empty,
                 tr("Usuarios Objetivo Filtrados por Umbral", lang) + " (0)",
                 [],
@@ -252,11 +229,6 @@ def register_callbacks(app):
             else 0.0
         )
 
-        model_info = (
-            f"{tr('Modelo utilizado para evaluación y scoring:', lang)} {model_name} "
-            f"({tr('clasificación de probabilidad de conversión', lang)})."
-        )
-
         kpis = [
             html.Div([
                 html.Div(f"{n_total:,}", className="kpi-value"),
@@ -280,6 +252,11 @@ def register_callbacks(app):
             ], className="kpi-card red"),
         ]
 
+        model_info = (
+            f"{tr('Modelo utilizado para evaluación y scoring operativo:', lang)} {model_name} "
+            f"({tr('clasificación de probabilidad de conversión', lang)})."
+        )
+
         fig_dist = px.histogram(
             df,
             x="conversion_score",
@@ -296,7 +273,7 @@ def register_callbacks(app):
             lines=[
                 {
                     "x": thr,
-                    "text": f"{tr('Umbral', lang)}: {thr:.2f}",
+                    "text": f"{tr('Umbral operativo', lang)}: {thr:.2f}",
                     "line_color": "#ef4444",
                     "line_dash": "dash",
                 }
@@ -310,53 +287,6 @@ def register_callbacks(app):
             font_family="Segoe UI",
             margin=dict(t=80, b=40, l=60, r=20),
         )
-
-        if "acquisition_channel" in df.columns:
-            by_channel = (
-                df.groupby("acquisition_channel", as_index=False)["conversion_score"]
-                .mean()
-                .sort_values("conversion_score", ascending=False)
-            )
-            fig_channel = px.bar(
-                by_channel,
-                x="acquisition_channel",
-                y="conversion_score",
-                title=tr("Score Promedio por Canal", lang),
-                color_discrete_sequence=["#3b82f6"],
-                text_auto=".3f",
-            )
-            fig_channel.update_layout(
-                paper_bgcolor="white",
-                plot_bgcolor="#fafafa",
-                font_family="Segoe UI",
-                margin=dict(t=50, b=60, l=60, r=20),
-            )
-        else:
-            fig_channel = _empty_fig(tr("Columna acquisition_channel no disponible", lang))
-
-        if "country" in df.columns:
-            by_country = (
-                df.groupby("country", as_index=False)["conversion_score"]
-                .mean()
-                .sort_values("conversion_score", ascending=False)
-                .head(15)
-            )
-            fig_country = px.bar(
-                by_country,
-                x="country",
-                y="conversion_score",
-                title=tr("Top 15 Países por Score Promedio", lang),
-                color_discrete_sequence=["#10b981"],
-                text_auto=".3f",
-            )
-            fig_country.update_layout(
-                paper_bgcolor="white",
-                plot_bgcolor="#fafafa",
-                font_family="Segoe UI",
-                margin=dict(t=50, b=60, l=60, r=20),
-            )
-        else:
-            fig_country = _empty_fig(tr("Columna country no disponible", lang))
 
         df_target = df_target.copy()
         df_target["score_band"] = "BAJO"
@@ -400,29 +330,22 @@ def register_callbacks(app):
             if c in COL_FORMATTERS:
                 col["format"] = COL_FORMATTERS[c]
             columns.append(col)
-        data = table_df.to_dict("records")
 
         target_title = f"{tr('Usuarios Objetivo Filtrados por Umbral', lang)} ({n_target:,})"
 
         return (
-            tr("🎯 Overview – Campaña de Conversión", lang),
-            tr("Identificación dinámica de usuarios objetivo según probabilidad de conversión. Ajusta el umbral para cambiar cobertura y foco comercial.", lang),
-            tr("Umbral de conversión:", lang),
+            tr("🛠️ Vista Operativa", lang),
+            tr("Ejecución diaria de campañas: priorización de clientes, monitoreo del flujo operativo y segmentación accionable.", lang),
+            tr("Umbral operativo:", lang),
             tr("Top usuarios a mostrar:", lang),
             tr("Distribución del Score de Conversión", lang),
-            tr("Visualiza el corte dinámico del umbral y cuántos usuarios quedan como objetivo.", lang),
-            tr("Tendencia por Canal de Adquisición", lang),
-            tr("Score promedio de conversión por canal.", lang),
-            tr("Tendencia por País", lang),
-            tr("Top países por score promedio de conversión.", lang),
+            tr("Visualiza el corte dinámico del umbral y cuántos usuarios quedan como objetivo de campaña.", lang),
             kpis,
             model_info,
             fig_dist,
-            fig_channel,
-            fig_country,
             target_title,
             columns,
-            data,
+            table_df.to_dict("records"),
         )
 
 

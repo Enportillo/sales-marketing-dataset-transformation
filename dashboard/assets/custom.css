@@ -246,6 +246,47 @@ body {
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
 }
 
+/* ── Ensanche solo para Vista Ejecutiva ───────────────────── */
+.exec-view {
+  width: 100%;
+  max-width: 1680px;
+  margin: 0 auto;
+}
+
+.exec-view .kpi-row {
+  gap: 18px;
+}
+
+.exec-view .kpi-card {
+  flex: 1 1 260px;
+  min-width: 260px;
+  padding: 18px 16px;
+}
+
+.exec-view .kpi-value {
+  font-size: clamp(1.5rem, 1.95vw, 2.15rem);
+  line-height: 1.05;
+}
+
+@media (min-width: 1600px) {
+  .exec-view {
+    max-width: 1840px;
+  }
+
+  .exec-view .dashboard-card {
+    padding: 22px;
+  }
+
+  .exec-view .grid-2 {
+    gap: 24px;
+  }
+
+  .exec-view .kpi-card {
+    min-width: 285px;
+    padding: 20px 18px;
+  }
+}
+
 /* ── Controles y dropdowns ──────────────────────────────────── */
 .control-row {
   display: flex;
